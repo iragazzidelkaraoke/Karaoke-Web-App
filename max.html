@@ -72,15 +72,15 @@
   });
 
   // Listener su reservationsRef
-  onValue(reservationsRef, (snapshot) => {
+  /*onValue(reservationsRef, (snapshot) => {
     const reservations = snapshot.val() || [];
     currentReservations = reservations;
 
     checkAndRedirect(currentReservations);
-  });
+  });*/
 
   // Funzione condivisa per gestire logica di reindirizzamento
-  function checkAndRedirect(reservations) {
+  /*function checkAndRedirect(reservations) {
     const container = document.getElementById("maxReached");
 
     // Caso: POSTI DISPONIBILI E numero massimo è aumentato
@@ -100,8 +100,62 @@
     }
     // Altrimenti resta sulla pagina max.html senza fare nulla
   }
+  */
 
-  
+onValue(reservationsRef, (snapshot) => {
+  const reservations = snapshot.val() || [];
+  currentReservations = reservations;
+
+  checkAndRedirect(currentReservations);
+  initialLoad = false; // Solo dopo la prima esecuzione
+});
+
+
+
+let initialLoad = true;
+
+function checkAndRedirect(reservations) {
+  const container = document.getElementById("maxReached");
+  const postiLiberi = reservations.length < maxPrenotazioni;
+
+  // ✅ Caso 1: aumento del limite → redirect automatico
+  if (postiLiberi && maxPrenotazioni > previousMax) {
+    if (!document.getElementById("redirectMsg")) {
+      const msg = document.createElement("p");
+      msg.id = "redirectMsg";
+      msg.innerHTML = "<em><strong>Sono stati messi a disposizione altri posti! Reindirizzamento...</strong></em>";
+      container.appendChild(msg);
+    }
+
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 3000);
+
+    previousMax = maxPrenotazioni;
+  }
+
+  // ✅ Caso 2: annullamento di prenotazione → mostra bottone SOLO dopo il primo load
+  else if (!initialLoad && postiLiberi && maxPrenotazioni === previousMax) {
+    if (!document.getElementById("manualReturnBtn")) {
+      const msg = document.createElement("p");
+      msg.innerHTML = "<em><strong>✨ Un posto si è liberato! Puoi riprovare a prenotare.</strong></em>";
+
+      const btn = document.createElement("button");
+      btn.id = "manualReturnBtn";
+      btn.textContent = "🎤 Torna alla prenotazione";
+      btn.classList.add("btn");
+      btn.style.marginTop = "1rem";
+      btn.onclick = () => {
+        window.location.href = "index.html";
+      };
+
+      container.appendChild(msg);
+      container.appendChild(btn);
+    }
+  }
+}
+
+
 </script>
 
 </body>
