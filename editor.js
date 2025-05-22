@@ -5,6 +5,43 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
+import { database, goOffline, goOnline } from './firebase.js';
+
+let inactivityTimer;
+let isConnected = true;
+
+function disconnectAfterInactivity() {
+  if (isConnected) {
+    console.log("⛔ Utente inattivo: disconnessione da Firebase");
+    goOffline(database);
+    isConnected = false;
+  }
+}
+
+function reconnectOnActivity() {
+  if (!isConnected) {
+    console.log("✅ Utente attivo: riconnessione a Firebase");
+    goOnline(database);
+    isConnected = true;
+  }
+}
+
+function resetInactivityTimer() {
+  reconnectOnActivity();
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(disconnectAfterInactivity, 10800 * 1000); // 3 ore
+}
+
+// Eventi che resettano il timer
+window.addEventListener("mousemove", resetInactivityTimer);
+window.addEventListener("mousedown", resetInactivityTimer);
+window.addEventListener("keypress", resetInactivityTimer);
+window.addEventListener("touchmove", resetInactivityTimer);
+
+// Avvia il timer al primo caricamento
+resetInactivityTimer();
+
+
 
 
 // CONFIGURAZIONE
