@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Max Prenotazioni</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="centerLogo">
+      <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi"></a>
+    </div>  
+
+    <a href="editor.html" id="cogEditor" class="editor-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    </a>
+  </header>
+
+  <div class="maxCenter">
+    <main id="mainMax">
+      <section id="maxReached" class="visible">
+        <h2>Numero massimo di prenotazioni raggiunto!</h2>
+        <p>Non sei stato abbastanza veloce?<br />
+        Seguici su Instagram per le prossime date.</p>
+        <a class="insta-link" href="https://www.instagram.com/iragazzi_band" target="_blank">@iragazzi_band</a>
+      </section>
+    </main>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbiGcVbznmRf0m-xPlIAtIkAQqMaCVHDk",
+    authDomain: "karaoke-live.firebaseapp.com",
+    databaseURL: "https://karaoke-live-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "karaoke-live",
+    storageBucket: "karaoke-live.appspot.com",
+    messagingSenderId: "268291410744",
+    appId: "1:268291410744:web:4cb66c45d586510b440fcd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const configRef = ref(db, "config");
+  const reservationsRef = ref(db, "reservations");
+
+  let maxPrenotazioni = 25;
+  let previousMax = null;
+  let currentReservations = [];
+
+  // Listener su configRef
+  onValue(configRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const config = snapshot.val();
+
+      if (previousMax === null) {
+        previousMax = config.maxPrenotazioni || 25;
+      }
+
+      maxPrenotazioni = config.maxPrenotazioni || 25;
+
+      // Verifica se è necessario reindirizzare
+      checkAndRedirect(currentReservations);
+    }
+  });
+
+  // Listener su reservationsRef
+  onValue(reservationsRef, (snapshot) => {
+    const reservations = snapshot.val() || [];
+    currentReservations = reservations;
+
+    checkAndRedirect(currentReservations);
+  });
+
+  // Funzione condivisa per gestire logica di reindirizzamento
+  function checkAndRedirect(reservations) {
+    const container = document.getElementById("maxReached");
+
+    // Caso: POSTI DISPONIBILI E numero massimo è aumentato
+    if (reservations.length < maxPrenotazioni && maxPrenotazioni > previousMax) {
+      if (!document.getElementById("redirectMsg")) {
+        const msg = document.createElement("p");
+        msg.id = "redirectMsg";
+        msg.innerHTML = "<em><strong>Sono stati messi a disposizione altri posti! Reindirizzamento...</strong></em>";
+        container.appendChild(msg);
+      }
+
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 3000);
+
+      previousMax = maxPrenotazioni;
+    }
+    // Altrimenti resta sulla pagina max.html senza fare nulla
+  }
+</script>
+
+</body>
+</html>

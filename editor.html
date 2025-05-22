@@ -1,0 +1,110 @@
+<!-- editor.html -->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Ragazzi del Karaoke</title>
+  <link rel="stylesheet" href="style.css" />
+    
+    <!--<script type="module" src="script.js"></script>-->
+    <script type="module" src="editor.js"></script>
+
+    
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+
+
+<script>
+  // Controllo se già autenticato nella sessione
+  if (!sessionStorage.getItem("editorAuthenticated")) {
+    const pwd = prompt("Password editor:");
+    if (pwd !== "nchia123") {
+      alert("Accesso negato.");
+      window.location.href = "index.html";
+    } else {
+      sessionStorage.setItem("editorAuthenticated", "true");
+      //document.body.style.visibility = "visible";
+    }
+  }
+</script>
+
+
+<body style="visibility: hidden;">
+   <header>
+     <div class="centerLogo" > <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
+   </header>
+
+  <main>    
+
+    <section id="editorPanel" class="visible">
+  
+      <h1>Editor</h1>
+      
+      
+<div>
+      <h3>Alterazioni E Modifiche</h3>
+ 
+  
+  
+       <section class="limitBack">
+      <label><h4>Limite per annullare:</h4>
+        <input type="number" id="annullaLimite" value="0" min="0" max="20" />
+      </label> 
+      </section>
+      
+      <section class="maxPreno">
+      <label for="maxPrenotazioniInput"><h4>Numero massimo di prenotazioni:</h4></label>
+      <input type="number" id="maxPrenotazioniInput" value="25" min="1">
+      </section>
+ 
+      
+      
+      <button id="resetBtn" class="btn btn-secondary">Reset Prenotazioni</button>
+      <button id="downloadCSVBtn" class="btn">Scarica CSV</button>
+      
+      
+</div>
+   <div>    
+           <h3>Scaletta Completa</h3>
+     
+       <section class="addSong">
+        <h4>Aggiungi Brani</h4>
+       <input type="text" id="newSongInput" placeholder="Nuovo brano" />
+      <button id="addSongBtn" class="btn">Aggiungi Brano</button>
+       </section>
+ 
+<table id="editorTable" style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Brano</th>
+      <th>Prenotati</th>
+      <th>X</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+      
+  <section style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+  <label for="currentSongInput">Brano attuale:</label>
+  <input type="number" id="currentSongInput" min="0" value="0" style="width: 60px;" />
+  <button id="prevSongBtn" class="btn btn-secondary">Brano Precedente</button>
+  <button id="nextSongBtn" class="btn">Prossimo Brano</button>
+</section>
+  </div>     
+ <div>
+<h3>Scaletta Editabile</h3>
+      <ul id="editableSongList" class="song-list editor"></ul>
+      <table id="editorTable">
+  <tbody></tbody>
+</table>
+      
+ </div>     
+ </section>     
+  </main>
+
+
+</body>
+</html>
