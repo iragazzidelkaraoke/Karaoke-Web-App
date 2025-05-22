@@ -3,7 +3,7 @@
 
 // IMPORTA Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
 // CONFIGURAZIONE
 const firebaseConfig = {
@@ -391,6 +391,7 @@ resetBtn.addEventListener("click", () => {
   if (conferma) {
     prenotazioni = [];
     branoCorrente = 0;
+    remove(ref(db, "lockedSongs"));
     save();
     renderSongs();
     waitingSection.classList.add("hidden");
