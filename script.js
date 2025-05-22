@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-function checkMaxPrenotazioniLive() {
+/*function checkMaxPrenotazioniLive() {
   if (!editorMode && !isEditor) {
     onValue(reservationsRef, (snapshot) => {
       const data = snapshot.exists() ? snapshot.val() : [];
@@ -173,6 +173,25 @@ function checkMaxPrenotazioniLive() {
       }
     });
   }
+}*/
+
+function checkMaxPrenotazioniLive() {
+  const unsubscribe = onValue(reservationsRef, (snapshot) => {
+    const data = snapshot.exists() ? snapshot.val() : [];
+    if (data.length >= maxPrenotazioni) {
+      //  Se è già stato prenotato da questo utente, NON reindirizzare
+      const currentUserName = localStorage.getItem("userName");
+      const alreadyThere = data.find(r => r.name === currentUserName);
+      if (!alreadyThere && !window.location.href.includes("editor=true")) {
+        setTimeout(() => {
+          window.location.href = "max.html";
+        }, 500);
+        
+      } else {
+        unsubscribe(); //  Disattiva il listener dopo la prenotazione
+      }
+    }
+  });
 }
 
 

@@ -42,7 +42,7 @@ function updateStatus() {
   const index = reservations.findIndex(r => r.name === userName);
   const user = reservations.find(r => r.name === userName);
 
-  // 🔴 Caso 1: Prenotazione non trovata
+  //  Caso 1: Prenotazione non trovata
   if (!user) {
     waitingMsg.innerHTML = "Prenotazione non trovata.<br><em>Verrai reindirizzato alla pagina iniziale tra <span id='countdown'>3</span> secondi...</em>";
 

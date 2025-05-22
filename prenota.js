@@ -84,7 +84,7 @@ await remove(lockedRef);
 
 localStorage.setItem("userName", name);
 
-// Delay di 5 secondi prima del redirect a waiting
+
 setTimeout(() => {
   window.location.href = "waiting.html";
 }, 0);
@@ -111,7 +111,7 @@ function checkMaxPrenotazioniLive() {
   const unsubscribe = onValue(reservationsRef, (snapshot) => {
     const data = snapshot.exists() ? snapshot.val() : [];
     if (data.length >= maxPrenotazioni) {
-      // ⚠️ Se è già stato prenotato da questo utente, NON reindirizzare
+      //  Se è già stato prenotato da questo utente, NON reindirizzare
       const currentUserName = localStorage.getItem("userName");
       const alreadyThere = data.find(r => r.name === currentUserName);
       if (!alreadyThere && !window.location.href.includes("editor=true")) {
@@ -120,7 +120,7 @@ function checkMaxPrenotazioniLive() {
         }, 500);
         
       } else {
-        unsubscribe(); // 🛑 Disattiva il listener dopo la prenotazione
+        unsubscribe(); //  Disattiva il listener dopo la prenotazione
       }
     }
   });
