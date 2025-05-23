@@ -31,9 +31,7 @@ export async function getTokenAttivo() {
   }
 }
 
-export async function verificaToken() {
-  const tokenUtente = localStorage.getItem("tokenSerata");
-
+export async function verificaToken(tokenUtente) {
   try {
     const snapshot = await get(ref(db, 'serata'));
     if (!snapshot.exists()) {
@@ -50,8 +48,8 @@ export async function verificaToken() {
     }
 
     if (!tokenUtente) {
-      localStorage.setItem("tokenSerata", tokenAttivo);
-      return true;
+      // Qui non impostare più localStorage, lo fa il chiamante
+      return false;
     }
 
     if (tokenUtente !== tokenAttivo) {

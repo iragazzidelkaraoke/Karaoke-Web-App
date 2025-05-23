@@ -66,21 +66,28 @@ let prenotazioniDaDb = [];
 
 
 
+
 window.addEventListener("load", async () => {
-  if (!localStorage.getItem("tokenSerata")) {
-    const token = await getTokenAttivo();
-    if (token) {
-      localStorage.setItem("tokenSerata", token);
-    } else {
-      window.location.href = "accesso_negato.html";
-      return;
-    }
+  // Recupera il token attivo dal DB
+  const token = await getTokenAttivo();
+
+  if (!token) {
+    // Se non c'è token attivo, accesso negato
+    window.location.href = "accesso_negato.html";
+    return;
   }
 
+  // Aggiorna sempre il localStorage con il token più recente
+  localStorage.setItem("tokenSerata", token);
+
+  // Ora fai la verifica con il token aggiornato
   const valido = await verificaToken();
 
   if (!valido) {
     window.location.href = "accesso_negato.html";
+  } else {
+    console.log("Accesso consentito, token valido:", token);
+    // Prosegui con caricamento pagina...
   }
 });
 
