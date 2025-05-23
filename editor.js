@@ -3,7 +3,7 @@
 
 // IMPORTA Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
 import { database, goOffline, goOnline } from './firebase.js';
 
@@ -31,6 +31,39 @@ function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
   inactivityTimer = setTimeout(disconnectAfterInactivity, 10800 * 1000); // 3 ore
 }
+
+
+function generaTokenCasuale() {
+  
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < 16; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+document.getElementById("generaToken").addEventListener("click", () => {
+  const conferma = confirm("Sei sicuro di voler generare un nuovo token?\nTutti gli utenti con il vecchio token perderanno l'accesso.");
+
+  if (!conferma) return;
+
+  const nuovoToken = generaTokenCasuale();
+
+  set(ref(db, 'serata'), {
+    attiva: true,
+    token: nuovoToken
+  })
+    .then(() => {
+      alert("Nuovo token generato: " + nuovoToken);
+    })
+    .catch((error) => {
+      console.error("Errore nell'aggiornamento del token:", error);
+    });
+});
+
+
+
 
 // Eventi che resettano il timer
 window.addEventListener("mousemove", resetInactivityTimer);
@@ -87,6 +120,7 @@ Promise.all([
 const songsRef = ref(db, 'songs');
 const reservationsRef = ref(db, 'reservations');
 const configRef = ref(db, 'config');
+
 
 let maxPrenotazioni = 25;
 let prenotazioni = [];
@@ -150,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  //let reservations = JSON.parse(localStorage.getItem("reservations")) || {};
+
  
 
 
@@ -294,6 +328,13 @@ resetBtn.addEventListener("click", () => {
   if (conferma) {
     prenotazioni = [];
     branoCorrente = 0;
+    remove(ref(db, "lockedSongs"))
+      .then(() => {
+        console.log("Brani bloccati rimossi con successo.");
+      })
+      .catch((error) => {
+        console.error("Errore durante la rimozione dei brani bloccati:", error);
+      });
     save();
     waitingSection.classList.add("hidden");
     alert("Prenotazioni resettate.");

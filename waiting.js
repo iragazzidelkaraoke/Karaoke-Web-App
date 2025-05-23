@@ -30,6 +30,8 @@ function resetInactivityTimer() {
   inactivityTimer = setTimeout(disconnectAfterInactivity, 10800 * 1000); // 3 ore
 }
 
+
+
 // Eventi che resettano il timer
 window.addEventListener("mousemove", resetInactivityTimer);
 window.addEventListener("mousedown", resetInactivityTimer);
@@ -62,6 +64,65 @@ const configRef = ref(db, "config");
 let reservations = [];
 let currentIndex = 0;
 let annullaLimite = 0;
+
+
+async function getTokenAttivo() {
+  try {
+    const snapshot = await get(ref(db, 'serata/token'));
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      console.warn("Nessun token attivo trovato.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Errore nel recupero del token:", error);
+    return null;
+  }
+}
+
+function verificaToken() {
+  const tokenUtente = localStorage.getItem("tokenSerata");
+
+  get(ref(db, 'serata')).then((snapshot) => {
+    if (snapshot.exists()) {
+      const datiSerata = snapshot.val();
+      const tokenAttivo = datiSerata.token;
+      const serataAttiva = datiSerata.attiva;
+
+      if (!serataAttiva) {
+        alert("Serata non attiva. Riprova più tardi.");
+        window.location.href = "accesso_negato.html";
+        return;
+      }
+
+      if (!tokenUtente) {
+        // Primo accesso: salva il token
+        localStorage.setItem("tokenSerata", tokenAttivo);
+      } else if (tokenUtente !== tokenAttivo) {
+        // Token vecchio → accesso negato
+        alert("Accesso negato: token scaduto.");
+        window.location.href = "accesso_negato.html";
+        return;
+      }
+
+      // Accesso consentito
+      console.log("Accesso valido con token:", tokenAttivo);
+
+    } else {
+      console.error("Nessuna serata trovata nel DB.");
+    }
+  }).catch((error) => {
+    console.error("Errore nel controllo del token:", error);
+  });
+}
+
+window.addEventListener("load", verificaToken);
+
+getTokenAttivo().then(tokenAttivo => {
+  localStorage.setItem('tokenSerata', tokenAttivo);
+  // Prosegui con il caricamento della pagina
+});
 
 
 onValue(resRef, (snapshot) => {
