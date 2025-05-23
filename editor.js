@@ -305,7 +305,7 @@ function renderEditorTable() {
 
     const actionCell = document.createElement("td");
     const editBtn = document.createElement("button");
-    editBtn.textContent = "Modifica";
+    editBtn.textContent = "☰";
     editBtn.classList.add("btn", "btn-secondary");
     editBtn.style.padding = "2px 8px";
     editBtn.addEventListener("click", () => {
