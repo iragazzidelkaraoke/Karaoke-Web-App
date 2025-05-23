@@ -43,7 +43,7 @@
       <h1>Editor</h1>
       
       
-<div>
+<div class="div1">
       <h3>Alterazioni E Modifiche</h3>
 
       <section class="newToken">
@@ -52,6 +52,13 @@
 
 
       <button class="btn" id="generaToken">Genera Nuovo Token</button>
+      </section>
+
+      <section>
+       <h4> Prenotazioni</h4>
+      <button id="resetBtn" class="btn btn-secondary">Reset Prenotazioni</button>
+      <button id="downloadCSVBtn" class="btn">Scarica CSV</button>
+      
       </section>
 
  
@@ -75,7 +82,7 @@
       
       
 </div>
-   <div>    
+   <div class="div1">    
            <h3>Scaletta Completa</h3>
      
        <section class="addSong">
@@ -83,6 +90,8 @@
        <input type="text" id="newSongInput" placeholder="Nuovo brano" />
       <button id="addSongBtn" class="btn">Aggiungi Brano</button>
        </section>
+
+
  
 <table id="editorTable" style="width: 100%; border-collapse: collapse;">
   <thead>
@@ -90,11 +99,28 @@
       <th>#</th>
       <th>Brano</th>
       <th>Prenotati</th>
-      <th>X</th>
+      <th>Modifica</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
+
+<div id="popupModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Modifica brano</h3>
+
+    <section id="popupEditName" class="popup-section">
+      <label>Nuovo nome del brano:</label>
+      <input type="text" id="popupSongName" />
+      <button class="btn" id="popupSaveName">Salva</button>
+      <button class="btn" id="popupRemoveSong">Rimuovi brano</button>
+      <button class="btn" id="popupCancelReservation">Annulla prenotazione</button>
+      <button class="btn btn-secondary" id="popupClose">Chiudi</button>
+    </section>
+    </div>
+  </div>
+</div>
+
       
   <section style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
   <label for="currentSongInput">Brano attuale:</label>
@@ -103,7 +129,7 @@
   <button id="nextSongBtn" class="btn">Prossimo Brano</button>
 </section>
   </div>     
- <div>
+ <div class="div1">
 <h3>Scaletta Editabile</h3>
       <ul id="editableSongList" class="song-list editor"></ul>
       <table id="editorTable">

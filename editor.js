@@ -3,7 +3,7 @@
 
 // IMPORTA Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, remove, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
 import { database, goOffline, goOnline } from './firebase.js';
 
@@ -202,10 +202,23 @@ onValue(songsRef, (snapshot) => {
 
 
 onValue(reservationsRef, snapshot => {
-  prenotazioni = snapshot.exists() ? snapshot.val() : [];
-  renderEditorList();   // ✅ Aggiungi questa riga per aggiornare l'ordine
+  prenotazioni = [];
+
+  if (snapshot.exists()) {
+    snapshot.forEach(child => {
+      const data = child.val();
+      prenotazioni.push({
+        id: child.key,        // 👈 aggiungiamo l'id Firebase
+        name: data.name,
+        song: data.song
+      });
+    });
+  }
+
+  renderEditorList();   // ✅ aggiorna la tabella
   updateWaitingMsg();
 });
+
 
      
      onValue(configRef, snapshot => {
@@ -290,28 +303,101 @@ function renderEditorTable() {
     const user = prenotazioni.find(p => p.song === song);
     userCell.textContent = user ? user.name : "";
 
-    const removeCell = document.createElement("td");
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "X";
-    removeBtn.classList.add("btn", "btn-secondary");
-    removeBtn.style.padding = "2px 8px";
-    removeBtn.addEventListener("click", () => {
-      if (confirm(`Rimuovere "${song}" dalla scaletta?`)) {
-        canzoni.splice(index, 1);
-        save();
-        renderEditorList();
-      }
+    const actionCell = document.createElement("td");
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Modifica";
+    editBtn.classList.add("btn", "btn-secondary");
+    editBtn.style.padding = "2px 8px";
+    editBtn.addEventListener("click", () => {
+      apriMenuModifica(index, song, user ? user.name : null);
     });
-    removeCell.appendChild(removeBtn);
+    actionCell.appendChild(editBtn);
 
     row.appendChild(indexCell);
     row.appendChild(songCell);
     row.appendChild(userCell);
-    row.appendChild(removeCell);
+    row.appendChild(actionCell);
 
     editorTableBody.appendChild(row);
   });
 }
+
+function apriMenuModifica(index, branoCorrente, utenteCorrente) {
+  const popup = document.getElementById("popupModal");
+  const popupEditName = document.getElementById("popupEditName");
+
+  const popupSongNameInput = document.getElementById("popupSongName");
+  const popupSaveNameBtn = document.getElementById("popupSaveName");
+  const popupCancelReservationBtn = document.getElementById("popupCancelReservation");
+  const popupRemoveSongBtn = document.getElementById("popupRemoveSong");
+  const popupCloseBtn = document.getElementById("popupClose");
+
+  // Mostra il popup
+  popup.classList.remove("hidden");
+  // Mostra la sezione modifica nome e nasconde quella con i bottoni
+  popupEditName.classList.remove("hidden");
+
+
+  popupSongNameInput.value = branoCorrente;
+
+  // Pulisci eventuali vecchi event listener per evitare duplicazioni
+  popupSaveNameBtn.onclick = null;
+  popupCancelReservationBtn.onclick = null;
+  popupRemoveSongBtn.onclick = null;
+  popupCloseBtn.onclick = null;
+
+  // Salva nuovo nome
+  popupSaveNameBtn.onclick = () => {
+    const nuovoNome = popupSongNameInput.value.trim();
+    if (nuovoNome && nuovoNome !== branoCorrente) {
+      canzoni[index] = nuovoNome;
+
+      const prenotazione = prenotazioni.find(p => p.song === branoCorrente);
+      if (prenotazione) {
+        prenotazione.song = nuovoNome;
+        update(ref(db, `reservations/${prenotazione.id}`), { song: nuovoNome });
+      }
+
+      save();
+      renderEditorList();
+    }
+    popup.classList.add("hidden");
+  };
+
+
+  // Annulla solo prenotazione
+  popupCancelReservationBtn.onclick = () => {
+    const prenotazioneDaAnnullare = prenotazioni.find(p => p.song === branoCorrente);
+    if (prenotazioneDaAnnullare) {
+      update(ref(db, `reservations/${prenotazioneDaAnnullare.id}`), { name: null, song: null });
+      prenotazioneDaAnnullare.name = null;
+      renderEditorList();
+    }
+    popup.classList.add("hidden");
+  };
+
+  // Rimuovi brano e prenotazione
+  popupRemoveSongBtn.onclick = () => {
+    const prenotazioneDaRimuovere = prenotazioni.find(p => p.song === branoCorrente);
+    if (prenotazioneDaRimuovere) {
+      remove(ref(db, `reservations/${prenotazioneDaRimuovere.id}`));
+      prenotazioni.splice(prenotazioni.indexOf(prenotazioneDaRimuovere), 1);
+    }
+    canzoni.splice(index, 1);
+    save();
+    renderEditorList();
+    popup.classList.add("hidden");
+  };
+
+  // Chiudi popup
+  popupCloseBtn.onclick = () => {
+    popup.classList.add("hidden");
+  };
+}
+
+
+
+
 
  
   addSongBtn.addEventListener("click", () => {
