@@ -350,7 +350,8 @@ function renderSongs() {
     const li = document.createElement("li");
     li.textContent = song;
 
-    const prenotato = prenotazioni.find(p => p.song === song);
+const validPrenotazioni = prenotazioni.filter(p => p && p.song);
+const prenotato = validPrenotazioni.find(p => p.song === song);
     const isLocked = lockedSongs && lockedSongs[song];
     const button = document.createElement("button");
 

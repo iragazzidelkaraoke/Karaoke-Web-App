@@ -177,7 +177,8 @@ bookingForm.addEventListener("submit", async (e) => {
   const snapshot = await get(reservationsRef);
   const reservations = snapshot.exists() ? snapshot.val() : [];
 
-  if (reservations.find((r) => r.name === name)) {
+const validReservations = reservations.filter(r => r && r.name);
+if (validReservations.find(r => r.name === name)) {
     alert("Qualcuno ha già prenotato con questo nome!");
     return;
   }
@@ -219,7 +220,8 @@ function checkMaxPrenotazioniLive() {
     if (data.length >= maxPrenotazioni) {
       //  Se è già stato prenotato da questo utente, NON reindirizzare
       const currentUserName = sessionStorage.getItem("userName");
-      const alreadyThere = data.find(r => r.name === currentUserName);
+const validData = data.filter(r => r && r.name);
+const alreadyThere = validData.find(r => r.name === currentUserName);
       if (!alreadyThere && !window.location.href.includes("editor=true")) {
         setTimeout(() => {
           window.location.href = "max.html";
