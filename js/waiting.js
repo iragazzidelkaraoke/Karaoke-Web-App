@@ -101,7 +101,7 @@ function updateStatus() {
         clearInterval(countdown);
         sessionStorage.removeItem("userName");
         sessionStorage.removeItem("songToBook");
-        window.location.href = "home.html";
+        window.location.href = "pages/home.html";
       }
     }, 1000);
 
@@ -135,7 +135,7 @@ function updateStatus() {
         clearInterval(countdownInterval);
         sessionStorage.removeItem("userName");
         sessionStorage.removeItem("songToBook");  
-        window.location.href = "home.html";
+        window.location.href = "pages/home.html";
       }
     }, 1000);
   }
@@ -158,6 +158,6 @@ cancelBtn.onclick = () => {
     set(resRef, reservations);
     sessionStorage.removeItem("userName");
     sessionStorage.removeItem("songToBook");
-    window.location.href = "home.html";
+    window.location.href = "pages/home.html";
   }
 };

@@ -6,10 +6,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>I Ragazzi del Karaoke</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
     
     <!--<script type="module" src="script.js"></script>-->
-    <script type="module" src="editor.js"></script>
+    <script type="module" src="js/editor.js"></script>
 
     
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -22,7 +22,7 @@
     const pwd = prompt("Password editor:");
     if (pwd !== "nchia123") {
       alert("Accesso negato.");
-      window.location.href = "home.html";
+      window.location.href = "pages/home.html";
     } else {
       sessionStorage.setItem("editorAuthenticated", "true");
       //document.body.style.visibility = "visible";
@@ -33,7 +33,7 @@
 
 <body style="visibility: hidden;">
    <header>
-     <div class="centerLogo" > <a href="home.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
+     <div class="centerLogo" > <a href="pages/home.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
    </header>
 
   <main>    

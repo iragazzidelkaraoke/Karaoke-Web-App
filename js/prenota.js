@@ -71,7 +71,7 @@ const song = sessionStorage.getItem("selectedSong");
 
 if (!song) {
   alert("Nessun brano selezionato. Torna alla pagina principale.");
-  window.location.href = "home.html";
+  window.location.href = "pages/home.html";
 }
 
 const songTitle = document.getElementById("songTitle");
@@ -113,7 +113,7 @@ function verificaToken() {
 
       if (!serataAttiva) {
         alert("Serata non attiva. Riprova più tardi.");
-        window.location.href = "accesso_negato.html";
+        window.location.href = "pages/accesso_negato.html";
         return;
       }
 
@@ -123,7 +123,7 @@ function verificaToken() {
       } else if (tokenUtente !== tokenAttivo) {
         // Token vecchio → accesso negato
         alert("Accesso negato: token scaduto.");
-        window.location.href = "accesso_negato.html";
+        window.location.href = "pages/accesso_negato.html";
         return;
       }
 
@@ -158,7 +158,7 @@ Promise.all([get(reservationsRef), get(lockedRef), get(configRef)]).then(
 
     if (!locked || alreadyReserved) {
       alert("Il brano non è disponibile.");
-      window.location.href = "home.html";
+      window.location.href = "pages/home.html";
     }
 
     // Se superato limite prenotazioni
@@ -192,7 +192,7 @@ sessionStorage.setItem("userName", name);
 
 
 setTimeout(() => {
-  window.location.href = "waiting.html";
+  window.location.href = "pages/waiting.html";
 }, 0);
 
 
@@ -208,7 +208,7 @@ window.addEventListener("beforeunload", () => {
 cancelBtn?.addEventListener("click", () => {
   remove(lockedRef).then(() => {
     sessionStorage.removeItem("selectedSong");
-    window.location.href = "home.html";
+    window.location.href = "pages/home.html";
   });
 });
 
