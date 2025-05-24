@@ -63,7 +63,7 @@ const configRef = ref(db, "config");
 
 let reservations = [];
 let currentIndex = 0;
-let annullaLimite = 0;
+let annullaLimite = -1;
 
 
 
@@ -147,7 +147,7 @@ cancelBtn.onclick = () => {
   const diff = index - currentIndex;
 
   if (diff < annullaLimite) {
-    alert(`Non puoi annullare la prenotazione: mancano solo ${diff} brani.`);
+    alert(`Non puoi annullare la prenotazione: mancano solo ${diff + 1} brani.`);
     return;
   }
 

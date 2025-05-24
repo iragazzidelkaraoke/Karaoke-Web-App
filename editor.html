@@ -17,18 +17,60 @@
 
 
 <script>
-  // Controllo se già autenticato nella sessione
-  if (!sessionStorage.getItem("editorAuthenticated")) {
-    const pwd = prompt("Password editor:");
-    if (pwd !== "nchia123") {
-      alert("Accesso negato.");
-      window.location.href = "home.html";
+ 
+
+   
+  window.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("passwordModal");
+    const input = document.getElementById("passwordInput");
+    const submit = document.getElementById("submitPassword");
+
+    const errorMsg = document.createElement("p");
+    errorMsg.style.color = "red";
+    errorMsg.style.marginTop = "1em";
+    errorMsg.style.display = "none";
+    errorMsg.textContent = "Password errata";
+    modal.querySelector("div").appendChild(errorMsg);
+
+    const PASSWORD = "nchia123";
+
+    if (sessionStorage.getItem("editorAuthenticated")) {
+      modal.style.display = "none";
+      document.body.style.visibility = "visible";
     } else {
-      sessionStorage.setItem("editorAuthenticated", "true");
-      //document.body.style.visibility = "visible";
+      document.body.style.visibility = "hidden";
+      modal.style.display = "flex";
+
+      submit.addEventListener("click", () => {
+        if (input.value === PASSWORD) {
+          sessionStorage.setItem("editorAuthenticated", "true");
+          modal.style.display = "none";
+          document.body.style.visibility = "visible";
+        } else {
+          errorMsg.style.display = "block";
+          input.value = "";
+        }
+      });
+
+      input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          submit.click();
+        }
+      });
     }
-  }
+  });
+
+
 </script>
+
+
+<div id="passwordModal" class="modal" >
+  <div class="modal-content">
+    <h2>Accesso Editor</h2>
+    <input type="password" id="passwordInput" placeholder="Inserisci password" />
+    <button id="submitPassword">Entra</button>
+  </div>
+</div>
 
 
 <body style="visibility: hidden;">
