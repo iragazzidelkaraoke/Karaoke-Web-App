@@ -67,11 +67,11 @@ const db = getDatabase(app);
 
 const isEditor = window.location.href.includes("editor=true");
 
-const song = localStorage.getItem("selectedSong");
+const song = sessionStorage.getItem("selectedSong");
 
 if (!song) {
   alert("Nessun brano selezionato. Torna alla pagina principale.");
-  window.location.href = "index.html";
+  window.location.href = "home.html";
 }
 
 const songTitle = document.getElementById("songTitle");
@@ -103,7 +103,7 @@ async function getTokenAttivo() {
 }
 
 function verificaToken() {
-  const tokenUtente = localStorage.getItem("tokenSerata");
+  const tokenUtente = sessionStorage.getItem("tokenSerata");
 
   get(ref(db, 'serata')).then((snapshot) => {
     if (snapshot.exists()) {
@@ -119,7 +119,7 @@ function verificaToken() {
 
       if (!tokenUtente) {
         // Primo accesso: salva il token
-        localStorage.setItem("tokenSerata", tokenAttivo);
+        sessionStorage.setItem("tokenSerata", tokenAttivo);
       } else if (tokenUtente !== tokenAttivo) {
         // Token vecchio → accesso negato
         alert("Accesso negato: token scaduto.");
@@ -141,7 +141,7 @@ function verificaToken() {
 window.addEventListener("load", verificaToken);
 
 getTokenAttivo().then(tokenAttivo => {
-  localStorage.setItem('tokenSerata', tokenAttivo);
+  sessionStorage.setItem('tokenSerata', tokenAttivo);
   // Prosegui con il caricamento della pagina
 });
 
@@ -158,7 +158,7 @@ Promise.all([get(reservationsRef), get(lockedRef), get(configRef)]).then(
 
     if (!locked || alreadyReserved) {
       alert("Il brano non è disponibile.");
-      window.location.href = "index.html";
+      window.location.href = "home.html";
     }
 
     // Se superato limite prenotazioni
@@ -188,7 +188,7 @@ bookingForm.addEventListener("submit", async (e) => {
   await set(reservationsRef, reservations);
 await remove(lockedRef);
 
-localStorage.setItem("userName", name);
+sessionStorage.setItem("userName", name);
 
 
 setTimeout(() => {
@@ -207,8 +207,8 @@ window.addEventListener("beforeunload", () => {
 // Tasto Annulla prenotazione
 cancelBtn?.addEventListener("click", () => {
   remove(lockedRef).then(() => {
-    localStorage.removeItem("selectedSong");
-    window.location.href = "index.html";
+    sessionStorage.removeItem("selectedSong");
+    window.location.href = "home.html";
   });
 });
 
@@ -218,7 +218,7 @@ function checkMaxPrenotazioniLive() {
     const data = snapshot.exists() ? snapshot.val() : [];
     if (data.length >= maxPrenotazioni) {
       //  Se è già stato prenotato da questo utente, NON reindirizzare
-      const currentUserName = localStorage.getItem("userName");
+      const currentUserName = sessionStorage.getItem("userName");
       const alreadyThere = data.find(r => r.name === currentUserName);
       if (!alreadyThere && !window.location.href.includes("editor=true")) {
         setTimeout(() => {

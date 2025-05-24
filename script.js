@@ -6,7 +6,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebas
 import { getDatabase, ref, set, get, onValue, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 import { database, goOffline, goOnline } from './firebase.js';
 
-import { getTokenAttivo, verificaToken } from './token.js';
+//import { verificaToken } from './token.js';
 
 let inactivityTimer;
 let isConnected = true;
@@ -66,30 +66,45 @@ let prenotazioniDaDb = [];
 
 
 
+async function verificaToken() {
+  try {
+    const snapshot = await get(ref(db, 'serata'));
 
-window.addEventListener("load", async () => {
-  // Recupera il token attivo dal DB
-  const token = await getTokenAttivo();
+    if (!snapshot.exists()) {
+      window.location.href = "accesso_negato.html";
+      return;
+    }
 
-  if (!token) {
-    // Se non c'è token attivo, accesso negato
+    const datiSerata = snapshot.val();
+    const tokenAttivo = datiSerata.token;
+    const serataAttiva = datiSerata.attiva;
+
+    if (!serataAttiva) {
+      window.location.href = "accesso_negato.html";
+      return;
+    }
+
+    const tokenUtente = sessionStorage.getItem("tokenSerata");
+
+    if (!tokenUtente || tokenUtente !== tokenAttivo) {
+      window.location.href = "accesso_negato.html";
+      return;
+    }
+
+    console.log("Accesso valido alla home.");
+    // Qui puoi continuare con altre logiche di home.html
+
+  } catch (error) {
+    console.error("Errore nella verifica del token:", error);
     window.location.href = "accesso_negato.html";
-    return;
   }
+}
 
-  // Aggiorna sempre il localStorage con il token più recente
-  localStorage.setItem("tokenSerata", token);
+window.addEventListener("load", verificaToken);
 
-  // Ora fai la verifica con il token aggiornato
-  const valido = await verificaToken();
 
-  if (!valido) {
-    window.location.href = "accesso_negato.html";
-  } else {
-    console.log("Accesso consentito, token valido:", token);
-    // Prosegui con caricamento pagina...
-  }
-});
+
+
 
 
 
@@ -182,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  //let reservations = JSON.parse(localStorage.getItem("reservations")) || {};
+  //let reservations = JSON.parse(sessionStorage.getItem("reservations")) || {};
  
 
 
@@ -245,7 +260,7 @@ function checkMaxPrenotazioniLive() {
     const data = snapshot.exists() ? snapshot.val() : [];
     if (data.length >= maxPrenotazioni) {
       //  Se è già stato prenotato da questo utente, NON reindirizzare
-      const currentUserName = localStorage.getItem("userName");
+      const currentUserName = sessionStorage.getItem("userName");
       const alreadyThere = data.find(r => r.name === currentUserName);
       if (!alreadyThere && !window.location.href.includes("editor=true")) {
         setTimeout(() => {
@@ -360,7 +375,7 @@ function renderSongs() {
       button.addEventListener("click", () => {
         // Blocca il brano in Firebase
         set(ref(db, "lockedSongs/" + song), true).then(() => {
-          localStorage.setItem("selectedSong", song);
+          sessionStorage.setItem("selectedSong", song);
           window.location.href = "prenota.html";
         });
       });
@@ -604,7 +619,7 @@ function updateWaitingMsg() {
 
 
   loginEditor.addEventListener("click", () => {
-  window.location.href = "index.html?editor=true";
+  window.location.href = "home.html?editor=true";
   });
   
   

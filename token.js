@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId: "1:268291410744:web:4cb66c45d586510b440fcd"
 };
 
-// inizializza Firebase
+// Inizializza Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -48,7 +48,6 @@ export async function verificaToken(tokenUtente) {
     }
 
     if (!tokenUtente) {
-      // Qui non impostare più localStorage, lo fa il chiamante
       return false;
     }
 
@@ -62,4 +61,3 @@ export async function verificaToken(tokenUtente) {
     return false;
   }
 }
-

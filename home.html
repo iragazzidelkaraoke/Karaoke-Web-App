@@ -1,0 +1,139 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html lang="it">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Ragazzi del Karaoke</title>
+  <link rel="stylesheet" href="style.css" />
+    
+    <!--<script type="module" src="script.js"></script>-->
+    <script type="module" src="script.js"></script>
+
+    
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body style="visibility: hidden;">
+   <header>
+     <div class="centerLogo"> <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi"></a>   </div>  
+  
+    <a href="editor.html" id="cogEditor" class="editor-btn">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+       <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+     </svg>
+    </a>
+
+ 
+   </header>
+
+  
+  <main>
+    <h3 id="prenotaLaTuaCanzone">Prenota la tua canzone</h3>
+
+
+    <div id="filterBars" class="controls">
+      <input type="text" id="searchInput" placeholder="Cerca brano..." />
+      <select id="sortSelect">
+        <option value="title">Ordina per titolo</option>
+        <option value="artist">Ordina per artista</option>
+      </select>
+    </div>
+
+    
+
+    <section id="songSection"> 
+      <ul id="songList" class="song-list"></ul>
+    </section>
+
+   <!-- <section id="reservationForm" class="hidden">
+      <h2>Inserisci il tuo nome</h2>
+      <form>
+        <input type="text" id="userName" placeholder="Nome" required />
+        <button type="submit" class="btn">Conferma Prenotazione</button>
+        <button type="button" id="cancelReservation" class="btn btn-secondary">Annulla</button>
+      </form>
+    </section>-->
+
+    <section id="waitingSection" class="hidden">
+      <h2 id="waitingMsg">Attendi il tuo turno</h2>
+      <button id="cancelSlotBtn" class="btn btn-secondary">Annulla Iscrizione</button>
+    </section>
+
+<section id="editorPanel" class="hidden">
+  
+      <h1>Editor</h1>
+      
+      
+<div>
+      <h3>Alterazioni E Modifiche</h3>
+ 
+  
+  
+       <section class="limitBack">
+      <label><h4>Limite per annullare:</h4>
+        <input type="number" id="annullaLimite" value="0" min="0" max="20" />
+      </label> 
+      </section>
+      
+      <section class="maxPreno">
+      <label for="maxPrenotazioniInput"><h4>Numero massimo di prenotazioni:</h4></label>
+      <input type="number" id="maxPrenotazioniInput" value="25" min="1">
+      </section>
+ 
+      
+      
+      <button id="resetBtn" class="btn btn-secondary">Reset Prenotazioni</button>
+      <button id="downloadCSVBtn" class="btn">Scarica CSV</button>
+      
+      
+</div>
+   <div>    
+           <h3>Scaletta Completa</h3>
+     
+       <section class="addSong">
+        <h4>Aggiungi Brani</h4>
+       <input type="text" id="newSongInput" placeholder="Nuovo brano" />
+      <button id="addSongBtn" class="btn">Aggiungi Brano</button>
+       </section>
+ 
+<table id="editorTable" style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Brano</th>
+      <th>Prenotati</th>
+      <th>X</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+      
+  <section style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+  <label for="currentSongInput">Brano attuale:</label>
+  <input type="number" id="currentSongInput" min="0" value="0" style="width: 60px;" />
+  <button id="prevSongBtn" class="btn btn-secondary">Brano Precedente</button>
+  <button id="nextSongBtn" class="btn">Prossimo Brano</button>
+</section>
+  </div>     
+ <div>
+<h3>Scaletta Editabile</h3>
+      <ul id="editableSongList" class="song-list editor"></ul>
+      
+ </div>     
+ </section>     
+
+    <section class="social-link" id="infoSection">
+      <p>Seguici su Instagram!
+        <a class="insta-link" href="https://www.instagram.com/iragazzi_band" target="_blank">@iragazzi_band</a>
+      </p>
+    </section>
+  </main>
+
+<script type="module" src="./firebase.js"></script>
+<script type="module" src="./script.js"></script>
+
+<script type="module" src="./home.js"></script>
+</body>
+</html>

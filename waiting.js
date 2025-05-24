@@ -2,7 +2,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
-import { getTokenAttivo, verificaToken } from './token.js';
 
 import { database, goOffline, goOnline } from './firebase.js';
 
@@ -55,7 +54,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const userName = localStorage.getItem("userName");
+const userName = sessionStorage.getItem("userName");
 const waitingMsg = document.getElementById("waitingMsg");
 const cancelBtn = document.getElementById("cancelSlotBtn");
 
@@ -68,23 +67,7 @@ let annullaLimite = 0;
 
 
 
-window.addEventListener("load", async () => {
-  if (!localStorage.getItem("tokenSerata")) {
-    const token = await getTokenAttivo();
-    if (token) {
-      localStorage.setItem("tokenSerata", token);
-    } else {
-      window.location.href = "accesso_negato.html";
-      return;
-    }
-  }
 
-  const valido = await verificaToken();
-
-  if (!valido) {
-    window.location.href = "accesso_negato.html";
-  }
-});
 
 
 
@@ -116,9 +99,9 @@ function updateStatus() {
       countdownSpan.textContent = seconds;
       if (seconds <= 0) {
         clearInterval(countdown);
-        localStorage.removeItem("userName");
-        localStorage.removeItem("songToBook");
-        window.location.href = "index.html";
+        sessionStorage.removeItem("userName");
+        sessionStorage.removeItem("songToBook");
+        window.location.href = "home.html";
       }
     }, 1000);
 
@@ -150,9 +133,9 @@ function updateStatus() {
       countdownSpan.textContent = seconds;
       if (seconds === 0) {
         clearInterval(countdownInterval);
-        localStorage.removeItem("userName");
-        localStorage.removeItem("songToBook");  
-        window.location.href = "index.html";
+        sessionStorage.removeItem("userName");
+        sessionStorage.removeItem("songToBook");  
+        window.location.href = "home.html";
       }
     }, 1000);
   }
@@ -173,8 +156,8 @@ cancelBtn.onclick = () => {
   if (index !== -1) {
     reservations.splice(index, 1);
     set(resRef, reservations);
-    localStorage.removeItem("userName");
-    localStorage.removeItem("songToBook");
-    window.location.href = "index.html";
+    sessionStorage.removeItem("userName");
+    sessionStorage.removeItem("songToBook");
+    window.location.href = "home.html";
   }
 };
