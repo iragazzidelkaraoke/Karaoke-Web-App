@@ -83,6 +83,10 @@ onValue(configRef, (snapshot) => {
   updateStatus();
 });
 
+
+
+
+
 function updateStatus() {
   const index = reservations.findIndex(r => r.name === userName);
   const user = reservations.find(r => r.name === userName);

@@ -366,15 +366,27 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
 
 
   // Annulla solo prenotazione
-  popupCancelReservationBtn.onclick = () => {
-    const prenotazioneDaAnnullare = prenotazioni.find(p => p.song === branoCorrente);
-    if (prenotazioneDaAnnullare) {
-      update(ref(db, `reservations/${prenotazioneDaAnnullare.id}`), { name: null, song: null });
-      prenotazioneDaAnnullare.name = null;
-      renderEditorList();
-    }
-    popup.classList.add("hidden");
-  };
+popupCancelReservationBtn.onclick = () => {
+  const prenotazioneDaAnnullare = prenotazioni.find(p => p.song === branoCorrente);
+
+  if (prenotazioneDaAnnullare) {
+    // Rimuove dal database Firebase
+    remove(ref(db, `reservations/${prenotazioneDaAnnullare.id}`))
+      .then(() => {
+        // Rimuove dall'array locale
+        prenotazioni = prenotazioni.filter(p => p.id !== prenotazioneDaAnnullare.id);
+        // Aggiorna la tabella editor
+        renderEditorList();
+      })
+      .catch(error => {
+        console.error("Errore durante la rimozione della prenotazione:", error);
+      });
+  }
+
+  // Chiudi il popup
+  popup.classList.add("hidden");
+};
+
 
   // Rimuovi brano e prenotazione
   popupRemoveSongBtn.onclick = () => {
