@@ -105,7 +105,21 @@ img {
     border-color: #56c5d0;
   }
 
+  .modalPW .modal-content button {
+    width: fit-content;
+    padding: 0.7rem 5.7rem;
+    background-color: #56c5d0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
 
+  .modalPW .modal-content button:hover {
+    background-color: #45a9b4;
+  }
 
   #errorMessage {
     color: red;
