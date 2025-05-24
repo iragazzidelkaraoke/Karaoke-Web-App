@@ -55,6 +55,75 @@ img {
   width: 100%;
 }
 
+
+/*password editor*/
+
+
+  .modalPW {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #8de3dd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: slideIn 0.4s ease;
+    max-width: 90%;
+    width: 300px;
+  }
+
+  .modal-content h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #333;
+  }
+
+  .modal-content input {
+    width: fit-content;
+    padding: 0.7rem;
+    margin-bottom: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .modal-content input:focus {
+    border-color: #56c5d0;
+  }
+
+
+
+  #errorMessage {
+    color: red;
+    margin-top: 0.5rem;
+    display: none;
+    font-size: 0.9rem;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
 h1, a{
   margin: 0;
   font-size: 1.5rem;
@@ -499,88 +568,3 @@ button {
       
 }
 
-/*password editor*/
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #8de3dd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    animation: fadeIn 0.5s ease-in-out;
-  }
-
-  .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    animation: slideIn 0.4s ease;
-    max-width: 90%;
-    width: 300px;
-  }
-
-  .modal-content h2 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-    color: #333;
-  }
-
-  .modal-content input {
-    width: fit-content;
-    padding: 0.7rem;
-    margin-bottom: 1rem;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.3s;
-  }
-
-  .modal-content input:focus {
-    border-color: #56c5d0;
-  }
-
-  .modal-content button {
-    width: fit-content;
-    padding: 0.7rem 5.7rem;
-    background-color: #56c5d0;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .modal-content button:hover {
-    background-color: #45a9b4;
-  }
-
-  #errorMessage {
-    color: red;
-    margin-top: 0.5rem;
-    display: none;
-    font-size: 0.9rem;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideIn {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
