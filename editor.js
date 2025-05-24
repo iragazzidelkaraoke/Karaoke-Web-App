@@ -33,34 +33,6 @@ function resetInactivityTimer() {
 }
 
 
-function generaTokenCasuale() {
-  
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 16; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
-}
-
-document.getElementById("generaToken").addEventListener("click", () => {
-  const conferma = confirm("Sei sicuro di voler generare un nuovo token?\nTutti gli utenti con il vecchio token perderanno l'accesso.");
-
-  if (!conferma) return;
-
-  const nuovoToken = generaTokenCasuale();
-
-  set(ref(db, 'serata'), {
-    attiva: true,
-    token: nuovoToken
-  })
-    .then(() => {
-      alert("Nuovo token generato: " + nuovoToken);
-    })
-    .catch((error) => {
-      console.error("Errore nell'aggiornamento del token:", error);
-    });
-});
 
 
 
@@ -96,6 +68,34 @@ const db = getDatabase(app);
 let maxPrenotazioniDaDb = 25;
 let prenotazioniDaDb = [];
 
+function generaTokenCasuale() {
+  
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let token = '';
+  for (let i = 0; i < 16; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+document.getElementById("generaToken").addEventListener("click", () => {
+  const conferma = confirm("Sei sicuro di voler generare un nuovo token?\nTutti gli utenti con il vecchio token perderanno l'accesso.");
+
+  if (!conferma) return;
+
+  const nuovoToken = generaTokenCasuale();
+
+  set(ref(db, 'serata'), {
+    attiva: true,
+    token: nuovoToken
+  })
+    .then(() => {
+      alert("Nuovo token generato: " + nuovoToken);
+    })
+    .catch((error) => {
+      console.error("Errore nell'aggiornamento del token:", error);
+    });
+});
 
 
 // Prima controlla subito se superato il limite
@@ -430,7 +430,7 @@ resetBtn.addEventListener("click", () => {
   downloadCSVBtn.addEventListener("click", () => {
     const rows = [["Nome", "Brano"]];
     prenotazioni.forEach(p => rows.push([p.name, p.song]));
-    const csvContent = rows.map(r => r.join(",")).join("\n");
+    const csvContent = "\uFEFF" + rows.map(e => e.join(";")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
