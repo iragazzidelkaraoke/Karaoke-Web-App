@@ -71,7 +71,7 @@ async function verificaToken() {
     const snapshot = await get(ref(db, 'serata'));
 
     if (!snapshot.exists()) {
-      window.location.href = "pages/accesso_negato.html";
+      window.location.href = "accesso_negato.html";
       return;
     }
 
@@ -80,23 +80,23 @@ async function verificaToken() {
     const serataAttiva = datiSerata.attiva;
 
     if (!serataAttiva) {
-      window.location.href = "pages/accesso_negato.html";
+      window.location.href = "accesso_negato.html";
       return;
     }
 
     const tokenUtente = sessionStorage.getItem("tokenSerata");
 
     if (!tokenUtente || tokenUtente !== tokenAttivo) {
-      window.location.href = "pages/accesso_negato.html";
+      window.location.href = "accesso_negato.html";
       return;
     }
 
     console.log("Accesso valido alla home.");
-    // Qui puoi continuare con altre logiche di pages/home.html
+    // Qui puoi continuare con altre logiche di home.html
 
   } catch (error) {
     console.error("Errore nella verifica del token:", error);
-    window.location.href = "pages/accesso_negato.html";
+    window.location.href = "accesso_negato.html";
   }
 }
 
@@ -123,7 +123,7 @@ Promise.all([
 
   // Se è superato e non è editor → redirect
   if (prenotazioniDaDb.length >= maxPrenotazioniDaDb && !isEditor) {
-    window.location.href = "pages/max.html";
+    window.location.href = "max.html";
   }
   // ✅ SOLO se NON è stato fatto il redirect:
   document.body.style.visibility = "visible";  
@@ -242,18 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/*function checkMaxPrenotazioniLive() {
-  if (!editorMode && !isEditor) {
-    onValue(reservationsRef, (snapshot) => {
-      const data = snapshot.exists() ? snapshot.val() : [];
-      if (data.length >= maxPrenotazioni) {
-        if (!window.location.href.includes("pages/max.html")) {
-          window.location.href = "pages/max.html";
-        }
-      }
-    });
-  }
-}*/
+
 
 function checkMaxPrenotazioniLive() {
   const unsubscribe = onValue(reservationsRef, (snapshot) => {
@@ -264,7 +253,7 @@ function checkMaxPrenotazioniLive() {
       const alreadyThere = data.find(r => r.name === currentUserName);
       if (!alreadyThere && !window.location.href.includes("editor=true")) {
         setTimeout(() => {
-          window.location.href = "pages/max.html";
+          window.location.href = "max.html";
         }, 500);
         
       } else {
@@ -338,7 +327,7 @@ function renderSongs() {
   }
 
   if (prenotazioni.length >= maxPrenotazioni && !editorMode && !currentUserName && !isEditor) {
-    window.location.href = "pages/max.html";
+    window.location.href = "max.html";
     return;
   }
 
@@ -376,7 +365,7 @@ function renderSongs() {
         // Blocca il brano in Firebase
         set(ref(db, "lockedSongs/" + song), true).then(() => {
           sessionStorage.setItem("selectedSong", song);
-          window.location.href = "pages/prenota.html";
+          window.location.href = "prenota.html";
         });
       });
     }
@@ -619,7 +608,7 @@ function updateWaitingMsg() {
 
 
   loginEditor.addEventListener("click", () => {
-  window.location.href = "pages/home.html?editor=true";
+  window.location.href = "home.html?editor=true";
   });
   
   

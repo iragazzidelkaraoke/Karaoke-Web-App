@@ -5,7 +5,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, remove, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
-import { database, goOffline, goOnline } from 'js/firebase.js';
+import { database, goOffline, goOnline } from './firebase.js';
 
 let inactivityTimer;
 let isConnected = true;
