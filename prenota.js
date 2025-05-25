@@ -36,7 +36,7 @@ function reconnectOnActivity() {
 function resetInactivityTimer() {
   reconnectOnActivity();
   clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(disconnectAfterInactivity, 10800 * 1000); // 3 ore
+  inactivityTimer = setTimeout(disconnectAfterInactivity, 1080 * 1000); // 30 min
 }
 
 

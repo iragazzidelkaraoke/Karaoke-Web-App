@@ -1,31 +1,41 @@
-// presenza.js
+import { getDatabase, ref, onValue, onDisconnect, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 
-import { database, auth } from './firebase.js';
-import { ref, onValue, onDisconnect, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAbiGcVbznmRf0m-xPlIAtIkAQqMaCVHDk",
+  authDomain: "karaoke-live.firebaseapp.com",
+  databaseURL: "https://karaoke-live-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "karaoke-live",
+  storageBucket: "karaoke-live.firebasestorage.app",
+  messagingSenderId: "268291410744",
+  appId: "1:268291410744:web:4cb66c45d586510b440fcd"
+};
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  const uid = user.uid;
-  const userStatusRef = ref(database, `/presence/${uid}`);
+const connectionsRef = ref(db, 'connections');
+const connectedRef = ref(db, ".info/connected");
 
-  const isOffline = {
-    state: "offline",
-    last_changed: serverTimestamp(),
-  };
+const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2)}`;
+const userRef = ref(db, `connections/${uniqueId}`);
 
-  const isOnline = {
-    state: "online",
-    last_changed: serverTimestamp(),
-  };
+onValue(connectedRef, (snap) => {
+  if (snap.val() === true) {
+    set(userRef, true);
+    onDisconnect(userRef).remove();
+  }
+});
 
-  const connectedRef = ref(database, ".info/connected");
-  onValue(connectedRef, (snapshot) => {
-    if (snapshot.val() === false) return;
+window.addEventListener("DOMContentLoaded", () => {
+  const counterElement = document.getElementById('online-counter');
 
-    onDisconnect(userStatusRef).set(isOffline).then(() => {
-      set(userStatusRef, isOnline);
-    });
+  onValue(connectionsRef, (snap) => {
+    const data = snap.val();
+    const count = data ? Object.keys(data).length : 0;
+
+    if (counterElement) {
+      counterElement.innerText = count;
+    }
   });
 });

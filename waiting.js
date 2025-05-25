@@ -7,9 +7,6 @@ import { database, goOffline, goOnline } from './firebase.js';
 let inactivityTimer;
 let isConnected = true;
 
-import { registraPresenzaOnline } from "./presenza.js";
-
-registraPresenzaOnline();
 
 
 function disconnectAfterInactivity() {
@@ -29,7 +26,7 @@ function reconnectOnActivity() {
 function resetInactivityTimer() {
   reconnectOnActivity();
   clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(disconnectAfterInactivity, 10800 * 1000);
+  inactivityTimer = setTimeout(disconnectAfterInactivity, 1080 * 1000); // 30 min
 }
 
 window.addEventListener("mousemove", resetInactivityTimer);
