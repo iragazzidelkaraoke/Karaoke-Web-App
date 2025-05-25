@@ -7,6 +7,11 @@ import { database, goOffline, goOnline } from './firebase.js';
 let inactivityTimer;
 let isConnected = true;
 
+import { registraPresenzaOnline } from "./presenza.js";
+
+registraPresenzaOnline();
+
+
 function disconnectAfterInactivity() {
   if (isConnected) {
     goOffline(database);
