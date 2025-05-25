@@ -1,8 +1,8 @@
 /*style.css*/
 body {
   margin: 0rem;
-  font-family: 'Work Sans', sans-serif;
-  font-weight: 400;
+  font-family: 'Poppins', sans-serif;
+ /* font-weight: 400;*/
   background-color: #8de3dd;
   color: #333;
 }
