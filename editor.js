@@ -3,7 +3,7 @@
 
 // IMPORTA Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, remove, update, onDisconnect} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, remove, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
 import { database, goOffline, goOnline } from './firebase.js';
 
@@ -63,29 +63,7 @@ const firebaseConfig = {
 // INIZIALIZZA FIREBASE
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const sessionId = sessionStorage.getItem("connId") || (() => {
-  const id = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-  sessionStorage.setItem("connId", id);
-  return id;
-})();
-const connectionRef = ref(db, "liveConnections/" + sessionId);
-
-
 //const isEditor = window.location.href.includes("editor=true");
-
-const liveCounter = document.getElementById("liveCounter");
-const liveCountSpan = document.getElementById("liveCount");
-
-set(connectionRef, {
-  userAgent: navigator.userAgent,
-  timestamp: Date.now()
-});
-onDisconnect(connectionRef).remove();
-
-if (liveCounter) {
-  liveCounter.style.display = "block";
-}
-
 
 let maxPrenotazioniDaDb = 25;
 let prenotazioniDaDb = [];
@@ -259,15 +237,6 @@ onValue(reservationsRef, snapshot => {
     updateWaitingMsg();
   }
 });
-
-const liveCountRef = ref(db, "liveConnections");
-onValue(liveCountRef, (snapshot) => {
-  const connections = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-  if (isEditor) {
-    liveCountSpan.textContent = connections;
-  }
-});
-
 
 
       maxPrenotazioniInput.addEventListener("change", save);

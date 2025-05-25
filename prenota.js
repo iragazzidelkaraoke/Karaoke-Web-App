@@ -11,10 +11,6 @@ import {
 
 import { database, goOffline, goOnline } from './firebase.js';
 
-import { registraPresenzaOnline } from "./presenza.js";
-
-registraPresenzaOnline();
-
 
 let inactivityTimer;
 let isConnected = true;
