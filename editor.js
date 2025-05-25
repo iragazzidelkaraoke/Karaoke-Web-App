@@ -174,10 +174,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const annullaLimiteInput = document.getElementById("annullaLimite");
   const maxPrenotazioniInput = document.getElementById("maxPrenotazioniInput");
   const editorTableBody = document.querySelector("#editorTable tbody");
+  const revealBtn = document.getElementById("revealEditBtn");
+  const hideBtn = document.getElementById("hideEditBtn");
+  const editableTable = document.getElementById("editableTableReveal");
+  
 
- //cost search and filter bar
+  //cost search and filter bar
   const searchBar = document.getElementById("filterBars");
 
+  
 
 
 
@@ -322,6 +327,7 @@ function renderEditorTable() {
   });
 }
 
+
 function apriMenuModifica(index, branoCorrente, utenteCorrente) {
   const popup = document.getElementById("popupModal");
   const popupEditName = document.getElementById("popupEditName");
@@ -434,7 +440,6 @@ resetBtn.addEventListener("click", () => {
         console.error("Errore durante la rimozione dei brani bloccati:", error);
       });
     save();
-    waitingSection.classList.add("hidden");
     alert("Prenotazioni resettate.");
   }
 });
@@ -576,6 +581,19 @@ function updateWaitingMsg() {
     }
   };
 }
+
+  revealBtn.addEventListener("click", () => {
+      editableTable.classList.remove("hidden");
+      hideBtn.classList.remove("hidden");
+      revealBtn.classList.add("hidden");
+    });
+
+    hideBtn.addEventListener("click", () => {
+      editableTable.classList.add("hidden");
+      hideBtn.classList.add("hidden");
+      revealBtn.classList.remove("hidden");
+    });
+  
 
 
   

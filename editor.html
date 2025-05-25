@@ -77,8 +77,16 @@
    <header>
      <div class="centerLogo" > <a href="home.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
    </header>
+ <section class="branoAttualeSection" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; position: fixed; bottom: 0;">
+  <label for="currentSongInput" style="padding: .5rem 0;">Brano attuale:</label>
+    <button id="prevSongBtn" class="btn btn-secondary">Brano -</button>
+  <input type="number" id="currentSongInput" min="0" value="0" style="width: 2rem;" />
 
+  <button id="nextSongBtn" class="btn">Brano +</button>
+</section>
   <main>    
+
+ 
 
     <section id="editorPanel" class="visible">
   
@@ -159,21 +167,22 @@
 </div>
 
       
-  <section style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-  <label for="currentSongInput">Brano attuale:</label>
-  <input type="number" id="currentSongInput" min="0" value="0" style="width: 60px;" />
-  <button id="prevSongBtn" class="btn btn-secondary">Brano Precedente</button>
-  <button id="nextSongBtn" class="btn">Prossimo Brano</button>
-</section>
-  </div>     
- <div class="div1">
-<h3>Scaletta Editabile</h3>
+ 
+  </div> 
+  
+<section class="reveal-editableTable">
+
+   <h3>Scaletta Editabile</h3>
+    <button class="btn visible" id="revealEditBtn">Mosta scaletta editabile</button>
+     <button class="btn hidden" id="hideEditBtn">Nascondi scaletta editabile</button>
+   <div id="editableTableReveal" class="div1 hidden">
+ 
       <ul id="editableSongList" class="song-list editor"></ul>
       <table id="editorTable">
   <tbody></tbody>
-</table>
-      
- </div>     
+  </table>
+   </div>
+</section> 
  </section>     
   </main>
 

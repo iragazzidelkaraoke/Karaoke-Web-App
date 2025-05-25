@@ -191,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchBar = document.getElementById("filterBars");
   const searchInput = document.getElementById("searchInput");
   const sortSelect = document.getElementById("sortSelect");
+  
 
 
 
@@ -311,6 +312,8 @@ set(ref(db), "lock123");
 function renderSongs() {
   songList.innerHTML = "";
   const search = searchInput.value.toLowerCase();
+  const sortValue = sortSelect.value;
+
 
   if (editorMode) {
     infoSection.classList.add("hidden");
@@ -350,9 +353,11 @@ function renderSongs() {
     const li = document.createElement("li");
     li.textContent = song;
 
-const validPrenotazioni = prenotazioni.filter(p => p && p.song);
-const prenotato = validPrenotazioni.find(p => p.song === song);
+    const validPrenotazioni = prenotazioni.filter(p => p && p.song);
+    const prenotato = validPrenotazioni.find(p => p.song === song);
     const isLocked = lockedSongs && lockedSongs[song];
+    if (sortValue === "free" && (prenotato || isLocked)) continue;
+
     const button = document.createElement("button");
 
     if (prenotato || isLocked) {
