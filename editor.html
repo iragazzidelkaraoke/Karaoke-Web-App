@@ -6,6 +6,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>I Ragazzi del Karaoke</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
     
     <!--<script type="module" src="script.js"></script>-->
@@ -82,13 +85,13 @@
    </header>
 
 
- <section class="branoAttualeSection" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; position: fixed; bottom: 0; width: 100%;">
+ <div class="branoAttualeSection">
   <label for="currentSongInput" style="padding: .5rem 0;">Brano attuale:</label>
-    <button id="prevSongBtn" class="btn btn-secondary">Brano -</button>
+    <button id="prevSongBtn" class="btn btn-secondary">-1</button>
   <input type="number" id="currentSongInput" min="0" value="0" style="width: 2rem;" />
 
-  <button id="nextSongBtn" class="btn">Brano +</button>
-</section>
+  <button id="nextSongBtn" class="btn">+1</button>
+</div>
 
 <div style="position: fixed; top: 35px; right: 1rem; background: #111; color: white; padding: 6px 12px; font-size: 0.9rem; border-radius: 10px; z-index: 999;">
   👥 Live: <span id="online-counter">0</span>

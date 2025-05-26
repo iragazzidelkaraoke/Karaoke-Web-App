@@ -1,10 +1,25 @@
 /*style.css*/
 body {
   margin: 0rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
  /* font-weight: 400;*/
   background-color: #8de3dd;
   color: #333;
+}
+
+.branoAttualeSection{
+  display: flex; 
+  justify-content: center;
+  align-items: center; 
+  gap: 10px; 
+  flex-wrap: wrap; 
+  position: fixed; 
+  bottom: 0;
+  background: #f5dfe8;
+  border-radius: 0px;
+  padding: .2rem .5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  width: 100%;
 }
 #reservationForm .btn {
   background-color: #db4d81;
@@ -52,6 +67,7 @@ img {
   margin-left: 0;
 }
 .centerLogo {
+  cursor: default;
   text-align: center;
   width: 100%;
 }
@@ -396,13 +412,7 @@ main {
   padding: .2rem 2rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
 }
-.branoAttualeSection{
-  background: #f5dfe8;
-  border-radius: 8px;
-  padding: .2rem 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  width: 100%;
-}
+
 #editorPanel h1{
   font-size: 3rem;
   text-align: center;
@@ -520,7 +530,7 @@ body .main-prenota {
 }
 
 #songTitle {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Roboto';
   font-size: 2em;
   text-decoration: underline;
 }
