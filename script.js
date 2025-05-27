@@ -73,7 +73,8 @@ async function verificaToken() {
     const snapshot = await get(ref(db, 'serata'));
 
     if (!snapshot.exists()) {
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
@@ -82,14 +83,16 @@ async function verificaToken() {
     const serataAttiva = datiSerata.attiva;
 
     if (!serataAttiva) {
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
     const tokenUtente = sessionStorage.getItem("tokenSerata");
 
     if (!tokenUtente || tokenUtente !== tokenAttivo) {
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
@@ -98,7 +101,8 @@ async function verificaToken() {
 
   } catch (error) {
     console.error("Errore nella verifica del token:", error);
-    window.location.href = "accesso_negato.html";
+    window.location.replace("accesso_negato.html");
+
   }
 }
 
