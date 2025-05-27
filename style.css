@@ -486,16 +486,11 @@ body .main-prenota {
   background: #6c757d;
 }
 
-/*#mainMax {
-  background-color: #f4d03f; 
-  padding: 2rem;
-  border-radius: 8px;
+#mainMax {
+  
   text-align: center;
-  color: #333;
-  margin: 2rem 2rem;
-  max-width: 600px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}*/
+  
+}
 
 #mainMax  h2 {
   font-size: 2rem;
@@ -580,12 +575,13 @@ button {
 }
 
 .accNeg {
-    background: white;
+  background: white;
   padding: 20px;
   border-radius: 8px;
   max-width: 400px;
   width: 90%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .accNegWrap {

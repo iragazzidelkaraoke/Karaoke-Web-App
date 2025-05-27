@@ -113,7 +113,6 @@ function verificaToken() {
       const serataAttiva = datiSerata.attiva;
 
       if (!serataAttiva) {
-        alert("Serata non attiva. Riprova più tardi.");
         window.location.href = "accesso_negato.html";
         return;
       }
@@ -123,7 +122,7 @@ function verificaToken() {
         sessionStorage.setItem("tokenSerata", tokenAttivo);
       } else if (tokenUtente !== tokenAttivo) {
         // Token vecchio → accesso negato
-        alert("Accesso negato: token scaduto.");
+        
         window.location.href = "accesso_negato.html";
         return;
       }
