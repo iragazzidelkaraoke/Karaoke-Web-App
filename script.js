@@ -234,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
        prenotazioni = snapshot.exists() ? snapshot.val() : [];
        renderSongs();
            updateWaitingMsg();
+           updatePostiCounter();
     });
 
      
@@ -246,6 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     maxPrenotazioniInput.value = maxPrenotazioni;
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
+    updatePostiCounter();
   }
 });
 
@@ -630,6 +632,14 @@ function updateWaitingMsg() {
   document.body.style.visibility = "visible";
 
   renderSongs();
+
+  // Aggiorna il contatore grafico in alto
+function updatePostiCounter() {
+  const el = document.getElementById("postiCounter");
+  if (!el) return;
+  el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
+}
+
 
   
 checkMaxPrenotazioniLive();
