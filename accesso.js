@@ -23,7 +23,8 @@ async function verificaTokenEReindirizza() {
 
     if (!snapshot.exists()) {
       console.error("Nessuna serata trovata.");
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
@@ -33,7 +34,8 @@ async function verificaTokenEReindirizza() {
 
     if (!serataAttiva) {
       console.warn("Serata non attiva.");
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
@@ -42,14 +44,15 @@ async function verificaTokenEReindirizza() {
     // Primo accesso: salva il token
     if (!tokenUtente) {
       sessionStorage.setItem("tokenSerata", tokenAttivo);
-      window.location.href = "home.html";
+      window.location.replace("home.html");
       return;
     }
 
     // Token non valido → accesso negato
     if (tokenUtente !== tokenAttivo) {
       console.warn("Token non valido.");
-      window.location.href = "accesso_negato.html";
+      window.location.replace("accesso_negato.html");
+
       return;
     }
 
@@ -59,7 +62,8 @@ async function verificaTokenEReindirizza() {
 
   } catch (error) {
     console.error("Errore nella verifica del token:", error);
-    window.location.href = "accesso_negato.html";
+    window.location.replace("accesso_negato.html");
+
   }
 }
 

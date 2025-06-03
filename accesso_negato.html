@@ -23,5 +23,17 @@
           <p>Il link utilizzato non è più valido. Scansiona nuovamente il QR code aggiornato per partecipare alla serata corrente.</p>
       </section>
   </section>
+
+
+
+<script>
+  // Impedisce che l'utente torni indietro
+  history.pushState(null, "", location.href);
+  window.addEventListener("popstate", function () {
+    history.pushState(null, "", location.href);
+  });
+</script>
+
+
 </body>
 </html>

@@ -222,6 +222,7 @@ onValue(reservationsRef, snapshot => {
 
   renderEditorList();   // ✅ aggiorna la tabella
   updateWaitingMsg();
+  updatePostiCounter();
 });
 
 
@@ -235,6 +236,7 @@ onValue(reservationsRef, snapshot => {
     maxPrenotazioniInput.value = maxPrenotazioni;
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
+    updatePostiCounter();
   }
 });
 
@@ -600,4 +602,12 @@ function updateWaitingMsg() {
   annullaLimiteInput.addEventListener("change", () => {
       save(); // ogni volta che l’input cambia, salva la nuova config
     });
+
+      // Aggiorna il contatore grafico in alto
+function updatePostiCounter() {
+  const el = document.getElementById("postiCounter");
+  if (!el) return;
+  el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
+}
+
 });
