@@ -91,6 +91,8 @@ document.getElementById("generaToken").addEventListener("click", () => {
   })
     .then(() => {
       alert("Nuovo token generato: " + nuovoToken);
+      new BroadcastChannel('token_channel').postMessage({ tipo: 'nuovo_token' });
+
     })
     .catch((error) => {
       console.error("Errore nell'aggiornamento del token:", error);

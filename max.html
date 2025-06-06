@@ -100,6 +100,17 @@
     });
   </script>
 
+  <script>
+const bc = new BroadcastChannel('token_channel');
+
+bc.onmessage = function(event) {
+  if (event.data.tipo === 'nuovo_token') {
+    // Appena ricevi il messaggio, fai il redirect
+    window.location.href = '/accesso_negato.html';
+  }
+};
+</script>
+
   <script type="module" src="./presenza.js"></script>
 </head>
 <body>

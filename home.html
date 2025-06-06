@@ -15,6 +15,7 @@
     <!--<script type="module" src="script.js"></script>-->
     <script type="module" src="script.js"></script>
     <script type="module" src="./presenza.js"></script>
+    <script type="module" src="./editor.js"></script>
 
     
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -147,5 +148,23 @@
 
 <script type="module" src="firebase.js"></script>
 <script type="module" src="script.js"></script>
+
+
+<script>
+const bc = new BroadcastChannel('token_channel');
+
+bc.onmessage = function(event) {
+  if (event.data.tipo === 'nuovo_token') {
+    // Appena ricevi il messaggio, fai il redirect
+    window.location.href = '/accesso_negato.html';
+  }
+};
+</script>
+
+
+
+
+
+
 </body>
 </html>
