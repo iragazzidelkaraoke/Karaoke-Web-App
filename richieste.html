@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Richieste Brani</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+   <header>
+     <div class="centerLogo" > <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
+   </header>
+  <main>
+    
+  <section class="requests">
+    <h1>Richiesta Brani Futuri</h1>
+    <div class="container">
+      <h2>Inserisci la tua richiesta</h2>
+      <input type="text" id="richiestaInput"  placeholder="Inserisci il nome del brano"><br>
+      <b>di</b> <br>
+      <input type="text" id="richiestaInput"  placeholder="Inserisci il nome dell'artista"><br>
+      <button onclick="salvaRichiesta()" class="btn">Invia Richiesta</button>
+      <button onclick="location.href='home.html'" class="btn btn-secondary">Annulla</button>
+      <h2 style="margin-top:30px;">Richieste Ricevute</h2>
+      <ul id="listaRichieste"></ul>
+    </div>
+  </section>
+
+      <section class="social-link" id="infoSection">
+      <p>Seguici su Instagram!
+        <a class="insta-link" href="https://www.instagram.com/iragazzi_band" target="_blank">@iragazzi_band</a>
+      </p>
+    </section>
+</main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAbiGcVbznmRf0m-xPlIAtIkAQqMaCVHDk",
+      authDomain: "karaoke-live.firebaseapp.com",
+      databaseURL: "https://karaoke-live-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "karaoke-live",
+      storageBucket: "karaoke-live.appspot.com",
+      messagingSenderId: "268291410744",
+      appId: "1:268291410744:web:4cb66c45d586510b440fcd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Salva nuova richiesta
+    async function salvaRichiesta() {
+      const input = document.getElementById('richiestaInput').value.trim();
+      if (!input) {
+        alert("Inserisci un brano.");
+        return;
+      }
+
+      const nuovaRichiestaRef = push(ref(db, 'richieste'));
+      await set(nuovaRichiestaRef, {
+        testo: input,
+        data: new Date().toISOString()
+      });
+
+      document.getElementById('richiestaInput').value = '';
+      alert("🎵 Richiesta inviata!");
+    }
+
+    // Mostra le richieste
+    const listaRef = ref(db, 'richieste');
+    onValue(listaRef, snapshot => {
+      const ul = document.getElementById('listaRichieste');
+      ul.innerHTML = '';
+      const richieste = snapshot.val();
+      if (!richieste) return;
+
+      Object.values(richieste).forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r.testo;
+        ul.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>

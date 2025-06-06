@@ -177,33 +177,6 @@
 </script>
 
 
-<script>
-  // Ricarica la pagina se è stata ripresa dalla cache
-  window.onpageshow = function (event) {
-    if (event.persisted) {
-      window.location.reload();
-    }
-  };
-
-  // Verifica il token ogni volta che la pagina diventa visibile
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === 'visible') {
-      const token = sessionStorage.getItem("tokenSerata");
-
-      fetch("controllo_accesso.php?token=" + encodeURIComponent(token))
-        .then(response => response.json())
-        .then(data => {
-          if (!data.valido) {
-            window.location.href = "accesso_negato.html";
-          }
-        })
-        .catch(() => {
-          // Se c'è un errore di rete, meglio uscire lo stesso
-          window.location.href = "accesso_negato.html";
-        });
-    }
-  });
-</script>
 
 
 

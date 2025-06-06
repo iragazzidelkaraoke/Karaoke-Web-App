@@ -390,11 +390,15 @@ function renderSongs() {
     songList.appendChild(li);
   }
 
-  if (count === 0) {
-    const li = document.createElement("li");
-    li.textContent = "Ci scusiamo, ma il brano non è presente nella scaletta.";
-    songList.appendChild(li);
-  }
+if (count === 0) {
+  const li = document.createElement("li");
+  li.innerHTML = `
+    Il brano che cerchi non è in scaletta?<br>
+    <button onclick="window.location.href='richieste.html'">Richiedi Ora</button>
+  `;
+  songList.appendChild(li);
+}
+
 }
 
 
