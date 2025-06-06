@@ -25,14 +25,22 @@
   </section>
 
 
-
 <script>
-  // Impedisce che l'utente torni indietro
-  history.pushState(null, "", location.href);
-  window.addEventListener("popstate", function () {
-    history.pushState(null, "", location.href);
-  });
+  // Disabilita il tasto indietro
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function (event) {
+    window.history.pushState(null, null, window.location.href);
+  };
 </script>
+<script>
+    // Reindirizzamento se si prova a tornare da un'altra pagina
+    document.addEventListener("DOMContentLoaded", function () {
+      if (document.referrer && !document.referrer.includes("accesso_negato.html")) {
+        window.location.replace("accesso_negato.html");
+      }
+    });
+  </script>
+
 
 
 </body>
