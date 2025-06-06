@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
 
 // Configurazione Firebase
 const firebaseConfig = {
@@ -15,6 +16,25 @@ const firebaseConfig = {
 // Inizializza Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Esegui l'autenticazione anonima
+signInAnonymously(auth)
+  .catch((error) => {
+    console.error("Errore durante l'autenticazione anonima:", error);
+    window.location.replace("accesso_negato.html");
+  });
+
+// Osserva lo stato di autenticazione
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Utente autenticato anonimamente:", user.uid);
+    verificaTokenEReindirizza();
+  } else {
+    console.warn("Utente non autenticato.");
+    window.location.replace("accesso_negato.html");
+  }
+});
 
 // Funzione principale per la verifica e redirezione
 async function verificaTokenEReindirizza() {
@@ -24,7 +44,6 @@ async function verificaTokenEReindirizza() {
     if (!snapshot.exists()) {
       console.error("Nessuna serata trovata.");
       window.location.replace("accesso_negato.html");
-
       return;
     }
 
@@ -35,7 +54,6 @@ async function verificaTokenEReindirizza() {
     if (!serataAttiva) {
       console.warn("Serata non attiva.");
       window.location.replace("accesso_negato.html");
-
       return;
     }
 
@@ -52,7 +70,6 @@ async function verificaTokenEReindirizza() {
     if (tokenUtente !== tokenAttivo) {
       console.warn("Token non valido.");
       window.location.replace("accesso_negato.html");
-
       return;
     }
 
@@ -63,9 +80,5 @@ async function verificaTokenEReindirizza() {
   } catch (error) {
     console.error("Errore nella verifica del token:", error);
     window.location.replace("accesso_negato.html");
-
   }
 }
-
-// Al caricamento della pagina, verifica il token
-window.addEventListener("load", verificaTokenEReindirizza);
