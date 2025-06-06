@@ -264,6 +264,8 @@ function save() {
     branoCorrente,
     annullaLimite
   });
+
+    set(ref(db, "editor/lastSave"), Date.now());
   
 }
 

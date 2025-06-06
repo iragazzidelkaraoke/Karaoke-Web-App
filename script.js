@@ -4,12 +4,13 @@
 // IMPORTA Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
-import { database, goOffline, goOnline} from './firebase.js';
+import { database, goOffline, goOnline } from './firebase.js';
 
 //import { verificaToken } from './token.js';
 
 let inactivityTimer;
 let isConnected = true;
+
 
 
 
