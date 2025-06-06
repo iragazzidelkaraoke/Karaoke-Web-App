@@ -149,42 +149,62 @@
 <script type="module" src="firebase.js"></script>
 <script type="module" src="script.js"></script>
 
+<script>
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === 'visible') {
+      // Quando la pagina torna visibile (es. da "Indietro")
+      const token = sessionStorage.getItem("token");
+      // oppure localStorage, a seconda di dove lo metti
 
-<script type="module">
-  /*import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+      fetch("controllo_accesso.php?token=" + encodeURIComponent(token))
+        .then(res => res.json())
+        .then(data => {
+          if (!data.valido) {
+            window.location.href = "accesso_negato.html";
+          }
+        });
+    }
+  });
+</script>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAbiGcVbznmRf0m-xPlIAtIkAQqMaCVHDk",
-  authDomain: "karaoke-live.firebaseapp.com",
-  databaseURL: "https://karaoke-live-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "karaoke-live",
-  storageBucket: "karaoke-live.firebasestorage.app",
-  messagingSenderId: "268291410744",
-  appId: "1:268291410744:web:4cb66c45d586510b440fcd"
+<script>
+  window.onpageshow = function (event) {
+    if (event.persisted) {
+      // Se la pagina è stata recuperata dalla cache (back/forward)
+      location.reload(); // Forza il ricaricamento
+    }
+  };
+</script>
+
+
+<script>
+  // Ricarica la pagina se è stata ripresa dalla cache
+  window.onpageshow = function (event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  // Verifica il token ogni volta che la pagina diventa visibile
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === 'visible') {
+      const token = sessionStorage.getItem("tokenSerata");
 
-  const tokenUtente = sessionStorage.getItem('token_accesso');
-
-  // 🔐 Verifica che il token utente esista
-  if (!tokenUtente) {
-    window.location.href = "/accesso_negato.html";
-  } else {
-    const serataRef = ref(db, 'serata/token');
-
-    onValue(serataRef, (snapshot) => {
-      const tokenCorrente = snapshot.val();
-
-      // ✅ Se il token cambia → redirect
-      if (tokenCorrente && tokenCorrente !== tokenUtente) {
-        window.location.href = '/accesso_negato.html';
-      }
-    });
-  }*/
+      fetch("controllo_accesso.php?token=" + encodeURIComponent(token))
+        .then(response => response.json())
+        .then(data => {
+          if (!data.valido) {
+            window.location.href = "accesso_negato.html";
+          }
+        })
+        .catch(() => {
+          // Se c'è un errore di rete, meglio uscire lo stesso
+          window.location.href = "accesso_negato.html";
+        });
+    }
+  });
 </script>
+
 
 
 

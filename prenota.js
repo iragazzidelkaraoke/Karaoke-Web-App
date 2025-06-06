@@ -88,21 +88,6 @@ let maxPrenotazioni = 25;
 document.getElementById("songTitle").textContent = " " + song;
 
 
-async function getTokenAttivo() {
-  try {
-    const snapshot = await get(ref(db, 'serata/token'));
-    if (snapshot.exists()) {
-      return snapshot.val();
-    } else {
-      console.warn("Nessun token attivo trovato.");
-      return null;
-    }
-  } catch (error) {
-    console.error("Errore nel recupero del token:", error);
-    return null;
-  }
-}
-
 function verificaToken() {
   const tokenUtente = sessionStorage.getItem("tokenSerata");
 
@@ -140,10 +125,6 @@ function verificaToken() {
 
 window.addEventListener("load", verificaToken);
 
-getTokenAttivo().then(tokenAttivo => {
-  sessionStorage.setItem('tokenSerata', tokenAttivo);
-  // Prosegui con il caricamento della pagina
-});
 
 
 
