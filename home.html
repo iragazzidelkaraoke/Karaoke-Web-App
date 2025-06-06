@@ -15,7 +15,7 @@
     <!--<script type="module" src="script.js"></script>-->
     <script type="module" src="script.js"></script>
     <script type="module" src="./presenza.js"></script>
-    <script type="module" src="./editor.js"></script>
+
 
     
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -150,19 +150,41 @@
 <script type="module" src="script.js"></script>
 
 
-<script>
-const bc = new BroadcastChannel('token_channel');
+<script type="module">
+  /*import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-bc.onmessage = function(event) {
-  if (event.data.tipo === 'nuovo_token') {
-    // Appena ricevi il messaggio, fai il redirect
-    window.location.href = '/accesso_negato.html';
-  }
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbiGcVbznmRf0m-xPlIAtIkAQqMaCVHDk",
+  authDomain: "karaoke-live.firebaseapp.com",
+  databaseURL: "https://karaoke-live-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "karaoke-live",
+  storageBucket: "karaoke-live.firebasestorage.app",
+  messagingSenderId: "268291410744",
+  appId: "1:268291410744:web:4cb66c45d586510b440fcd"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const tokenUtente = sessionStorage.getItem('token_accesso');
+
+  // 🔐 Verifica che il token utente esista
+  if (!tokenUtente) {
+    window.location.href = "/accesso_negato.html";
+  } else {
+    const serataRef = ref(db, 'serata/token');
+
+    onValue(serataRef, (snapshot) => {
+      const tokenCorrente = snapshot.val();
+
+      // ✅ Se il token cambia → redirect
+      if (tokenCorrente && tokenCorrente !== tokenUtente) {
+        window.location.href = '/accesso_negato.html';
+      }
+    });
+  }*/
 </script>
-
-
-
 
 
 

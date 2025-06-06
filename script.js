@@ -70,46 +70,69 @@ let prenotazioniDaDb = [];
 
 
 
-async function verificaToken() {
+async function getTokenAttivo() {
   try {
-    const snapshot = await get(ref(db, 'serata'));
-
-    if (!snapshot.exists()) {
-      window.location.replace("accesso_negato.html");
-
-      return;
+    const snapshot = await get(ref(db, 'serata/token'));
+    if (snapshot.exists()) {
+      return snapshot.val();
+    } else {
+      console.warn("Nessun token attivo trovato.");
+      return null;
     }
-
-    const datiSerata = snapshot.val();
-    const tokenAttivo = datiSerata.token;
-    const serataAttiva = datiSerata.attiva;
-
-    if (!serataAttiva) {
-      window.location.replace("accesso_negato.html");
-
-      return;
-    }
-
-    const tokenUtente = sessionStorage.getItem("tokenSerata");
-
-    if (!tokenUtente || tokenUtente !== tokenAttivo) {
-      window.location.replace("accesso_negato.html");
-
-      return;
-    }
-
-    console.log("Accesso valido alla home.");
-    // Qui puoi continuare con altre logiche di home.html
-
   } catch (error) {
-    console.error("Errore nella verifica del token:", error);
-    window.location.replace("accesso_negato.html");
-
+    console.error("Errore nel recupero del token:", error);
+    return null;
   }
 }
 
-window.addEventListener("load", verificaToken);
+function verificaToken() {
+  const tokenUtente = sessionStorage.getItem("tokenSerata");
 
+  get(ref(db, 'serata')).then((snapshot) => {
+    if (snapshot.exists()) {
+      const datiSerata = snapshot.val();
+      const tokenAttivo = datiSerata.token;
+      const serataAttiva = datiSerata.attiva;
+
+      if (!serataAttiva) {
+        window.location.href = "accesso_negato.html";
+        return;
+      }
+
+      if (!tokenUtente) {
+        // Primo accesso: salva il token
+        sessionStorage.setItem("tokenSerata", tokenAttivo);
+      } else if (tokenUtente !== tokenAttivo) {
+        // Token vecchio → accesso negato
+        
+        window.location.href = "accesso_negato.html";
+        return;
+      }
+
+      // Accesso consentito
+      console.log("Accesso valido con token:", tokenAttivo);
+
+    } else {
+      console.error("Nessuna serata trovata nel DB.");
+    }
+  }).catch((error) => {
+    console.error("Errore nel controllo del token:", error);
+  });
+}
+window.addEventListener("load", async () => {
+  const tokenAttivo = await getTokenAttivo();
+
+  if (tokenAttivo) {
+    sessionStorage.setItem("tokenSerata", tokenAttivo);
+  }
+
+  verificaToken(); // esegui solo dopo aver salvato il token
+});
+
+getTokenAttivo().then(tokenAttivo => {
+  sessionStorage.setItem('tokenSerata', tokenAttivo);
+  // Prosegui con il caricamento della pagina
+});
 
 
 
