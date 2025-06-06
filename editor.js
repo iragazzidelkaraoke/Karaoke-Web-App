@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const addSongBtn = document.getElementById("addSongBtn");
   const editableSongList = document.getElementById("editableSongList");
   const resetBtn = document.getElementById("resetBtn");
-  const downloadCSVBtn = document.getElementById("downloadCSVBtn");
+  const downloadExcelBtn = document.getElementById("downloadCSVBtn");
 
   const currentSongInput = document.getElementById("currentSongInput");
   const nextSongBtn = document.getElementById("nextSongBtn");
@@ -434,35 +434,66 @@ popupCancelReservationBtn.onclick = () => {
   });
 
 resetBtn.addEventListener("click", () => {
-  const conferma = confirm("Sei sicuro di voler resettare tutte le prenotazioni?");
+  const conferma = confirm("Sei sicuro di voler resettare tutte le prenotazioni e le richieste?");
   if (conferma) {
     prenotazioni = [];
     branoCorrente = 0;
-    remove(ref(db, "lockedSongs"))
-      .then(() => {
-        console.log("Brani bloccati rimossi con successo.");
-      })
-      .catch((error) => {
-        console.error("Errore durante la rimozione dei brani bloccati:", error);
-      });
-    save();
-    alert("Prenotazioni resettate.");
+
+    Promise.all([
+      remove(ref(db, "lockedSongs")),
+      remove(ref(db, "richieste"))
+    ])
+    .then(() => {
+      console.log("Prenotazioni e richieste resettate.");
+      save();
+      alert("Prenotazioni e richieste resettate.");
+    })
+    .catch((error) => {
+      console.error("Errore durante il reset:", error);
+    });
   }
 });
 
-  downloadCSVBtn.addEventListener("click", () => {
-    const rows = [["Nome", "Brano"]];
-    prenotazioni.forEach(p => rows.push([p.name, p.song]));
-    const csvContent = "\uFEFF" + rows.map(e => e.join(";")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "prenotazioni.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-    
+
+downloadExcelBtn.addEventListener("click", async () => {
+  // 🟦 Foglio prenotazioni
+  const prenotazioniData = [["Nome", "Brano"]];
+  prenotazioni.forEach(p => {
+    prenotazioniData.push([p.name, p.song]);
   });
+  const wsPrenotazioni = XLSX.utils.aoa_to_sheet(prenotazioniData);
+
+  // 🟩 Foglio richieste
+  const snapshot = await get(ref(db, 'richieste'));
+  const richieste = snapshot.val();
+  const conteggio = {};
+
+  if (richieste) {
+    Object.values(richieste).forEach(r => {
+      const key = `${r.titolo} - ${r.artista}`;
+      conteggio[key] = (conteggio[key] || 0) + 1;
+    });
+  }
+
+  const richiesteData = [["Titolo", "Artista", "Conteggio"]];
+  for (const key in conteggio) {
+    const [titolo, artista] = key.split(" - ");
+    richiesteData.push([titolo, artista, conteggio[key]]);
+  }
+
+  const wsRichieste = XLSX.utils.aoa_to_sheet(richiesteData);
+
+  // 📗 Genera Excel
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsPrenotazioni, "Prenotazioni");
+  XLSX.utils.book_append_sheet(wb, wsRichieste, "Richieste");
+
+  // 📅 Data odierna nel formato YYYY-MM-DD
+  const oggi = new Date().toISOString().slice(0, 10);
+
+  // ⬇️ Scarica file
+  XLSX.writeFile(wb, `report_serata_${oggi}.xlsx`);
+});
 
 new Sortable(editableSongList, {
   animation: 150,

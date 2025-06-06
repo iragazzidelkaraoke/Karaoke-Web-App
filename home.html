@@ -149,32 +149,7 @@
 <script type="module" src="firebase.js"></script>
 <script type="module" src="script.js"></script>
 
-<script>
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === 'visible') {
-      // Quando la pagina torna visibile (es. da "Indietro")
-      const token = sessionStorage.getItem("token");
-      // oppure localStorage, a seconda di dove lo metti
 
-      fetch("controllo_accesso.php?token=" + encodeURIComponent(token))
-        .then(res => res.json())
-        .then(data => {
-          if (!data.valido) {
-            window.location.href = "accesso_negato.html";
-          }
-        });
-    }
-  });
-</script>
-
-<script>
-  window.onpageshow = function (event) {
-    if (event.persisted) {
-      // Se la pagina è stata recuperata dalla cache (back/forward)
-      location.reload(); // Forza il ricaricamento
-    }
-  };
-</script>
 
 
 
