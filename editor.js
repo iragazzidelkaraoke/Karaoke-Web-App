@@ -456,55 +456,76 @@ resetBtn.addEventListener("click", () => {
 
 
 downloadExcelBtn.addEventListener("click", async () => {
-  // 🟦 Foglio prenotazioni
-  const prenotazioniData = [["Nome", "Brano"]];
-  prenotazioni.forEach(p => {
-    prenotazioniData.push([p.name, p.song]);
-  });
-  const wsPrenotazioni = XLSX.utils.aoa_to_sheet(prenotazioniData);
+  const workbook = new ExcelJS.Workbook();
+  const oggi = new Date().toISOString().slice(0, 10);
+  const filename = `report_serata_${oggi}.xlsx`;
 
-  // 🟩 Foglio richieste
+  // 🎨 Aggiungi foglio prenotazioni
+  const wsPrenotazioni = workbook.addWorksheet("Prenotazioni", { properties: { tabColor: { argb: 'FFCCE5FF' } } });
+  wsPrenotazioni.columns = [
+    { header: "Nome", key: "nome", width: 30 },
+    { header: "Brano", key: "brano", width: 40 }
+  ];
+  prenotazioni.forEach(p => wsPrenotazioni.addRow({ nome: p.name, brano: p.song }));
+
+  wsPrenotazioni.getRow(1).eachCell(cell => {
+    cell.font = { bold: true };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCE5FF' } };
+    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+  });
+
+  // 🎨 Aggiungi foglio richieste
+  const wsRichieste = workbook.addWorksheet("Richieste", { properties: { tabColor: { argb: 'FFFFE599' } } });
+  wsRichieste.columns = [
+    { header: "Titolo", key: "titolo", width: 30 },
+    { header: "Artista", key: "artista", width: 30 },
+    { header: "Conteggio", key: "conteggio", width: 15 }
+  ];
+
   const snapshot = await get(ref(db, 'richieste'));
   const richieste = snapshot.val();
-  const conteggio = {};
-
   if (richieste) {
     Object.values(richieste).forEach(r => {
-      const key = `${r.titolo} - ${r.artista}`;
-      conteggio[key] = (conteggio[key] || 0) + 1;
+      wsRichieste.addRow({
+        titolo: r.titolo,
+        artista: r.artista,
+        conteggio: r.count || 1
+      });
     });
   }
 
-  const richiesteData = [["Titolo", "Artista", "Conteggio"]];
-  for (const key in conteggio) {
-    const [titolo, artista] = key.split(" - ");
-    richiesteData.push([titolo, artista, conteggio[key]]);
-  }
+  wsRichieste.getRow(1).eachCell(cell => {
+    cell.font = { bold: true };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE599' } };
+    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+  });
 
-  const wsRichieste = XLSX.utils.aoa_to_sheet(richiesteData);
 
-  // 📗 Genera Excel
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsPrenotazioni, "Prenotazioni");
-  XLSX.utils.book_append_sheet(wb, wsRichieste, "Richieste");
 
-  // 📅 Data odierna nel formato YYYY-MM-DD
-  const oggi = new Date().toISOString().slice(0, 10);
 
-  // ⬇️ Scarica file
-  XLSX.writeFile(wb, `report_serata_${oggi}.xlsx`);
+
+  // 📥 Scarica
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 });
+
 
 new Sortable(editableSongList, {
   animation: 150,
   onEnd: () => {
     const updated = Array.from(editableSongList.children).map(li => {
       const raw = li.textContent.trim();
-      return raw.replace(/^\d+\.\s*/, ""); // Rimuove l’indice numerico
+      return raw.replace(/^\d+\.\s*/, ""); 
     });
     canzoni = updated;
-    save();                    // Salva sul database
-    renderEditorList();        // 🔁 Rendi subito visibile l’aggiornamento
+    save();                    
+    renderEditorList();       
   }
 });
 
