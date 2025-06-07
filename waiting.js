@@ -104,7 +104,7 @@ function updateStatus() {
   } else if (diff === 0) {
     waitingMsg.innerHTML = `<strong>Preparati a cantare:</strong><br> <div class='wait-brano'>${user.song}</div><br><div class='wait-turno'>🎤✨ È il tuo turno! ✨</div>`;
   } else {
-    waitingMsg.innerHTML = `<strong>Complimenti sei stato un talento a cantare:</strong> ${user.song}<br><em>Adesso verrai reindirizzato alla pagina iniziale tra <span id="countdown">5</span> secondi...</em>`;
+    waitingMsg.innerHTML = `<strong>Complimenti sei stato un talento a cantare:</strong> <div class='wait-brano'>${user.song}</div><br><div class='wait-turno'><em>Adesso verrai reindirizzato alla pagina iniziale tra <span id="countdown">5</span> secondi...</em></div>`;
     let seconds = 5;
     const countdownSpan = document.getElementById("countdown");
     const countdownInterval = setInterval(() => {
