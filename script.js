@@ -647,6 +647,31 @@ function updatePostiCounter() {
   el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
 }
 
+setTimeout(() => {
+  const lockedSongsSnapshot = ref(db, "lockedSongs");
+  get(lockedSongsSnapshot).then(snapshot => {
+    if (snapshot.exists()) {
+      const locked = snapshot.val();
+      const updates = {};
+
+      // Rimuovi tutti i brani bloccati
+      Object.keys(locked).forEach(song => {
+        updates["lockedSongs/" + song] = null;
+      });
+
+      // Applica la rimozione solo se ci sono canzoni da sbloccare
+      if (Object.keys(updates).length > 0) {
+        update(ref(db), updates)
+          .then(() => {
+            console.log(" Brani sbloccati automaticamente dopo 140 secondi.");
+          })
+          .catch((err) => {
+            console.error("Errore nello sblocco automatico:", err);
+          });
+      }
+    }
+  });
+}, 140000); // 140 secondi
 
   
 checkMaxPrenotazioniLive();
