@@ -193,6 +193,22 @@ cancelBtn?.addEventListener("click", () => {
     window.location.href = "home.html";
   });
 });
+//countdown Annulla prenotazione
+
+let seconds= 120;
+const countdownInterval = setInterval(() => {
+      seconds--;
+      
+      if (seconds === 0) {
+        clearInterval(countdownInterval);
+        window.location.href = "home.html";
+        sessionStorage.removeItem("selectedSong");
+        setTimeout(() => {
+        
+        
+        }, 100);
+      }
+    }, 1000);
 
 
 function checkMaxPrenotazioniLive() {

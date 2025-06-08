@@ -70,6 +70,7 @@ let prenotazioniDaDb = [];
 
 
 
+
 async function verificaToken() {
   try {
     const snapshot = await get(ref(db, 'serata'));
