@@ -4,14 +4,13 @@ body {
   margin: 0rem;
   font-family: 'Roboto', sans-serif;
  /* font-weight: 400;*/
-background: linear-gradient(125deg, #8de3dd,#7a99ff, #f47aa6);
+  background: linear-gradient(125deg, #8de3dd,#7a99ff, #f47aa6);
 
- /* background-color: #8de3dd;*/
   color: #333;
 }
 
 .glass-header {
-  background: #f47aa7db;
+  background: #f47aa7cb;
   backdrop-filter: blur(10px);
   
 }
