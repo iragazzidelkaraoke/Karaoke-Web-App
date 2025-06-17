@@ -4,7 +4,7 @@ body {
   margin: 0rem;
   font-family: 'Roboto', sans-serif;
  /* font-weight: 400;*/
-background: linear-gradient(120deg, #8de3dd, #f47aa6);
+background: linear-gradient(125deg, #8de3dd, #f47aa6);
 
  /* background-color: #8de3dd;*/
   color: #333;
@@ -291,7 +291,7 @@ main {
 .song-list li {
   padding: 1rem;
   margin-bottom: 0.5rem;
-  background: linear-gradient(182deg, #eee, #ffffff7e);
+  background: linear-gradient(190deg, #eee, #ffffffa0);
   backdrop-filter: blur(10px);
   border-radius: 8px;
   display: flex;
