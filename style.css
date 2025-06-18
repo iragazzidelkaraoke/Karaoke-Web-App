@@ -283,24 +283,26 @@ main {
 #filterBars .controls {
   display: flex;
   justify-content: space-between;
-  text-align: justify;
-  width: 100%;
+  align-items: center;
+  gap: 1rem;
+  
 }
 
 #searchInput {
-  flex: 1;
+  flex-grow: 1;
   padding: 0.5rem;
   font-size: 1rem;
   border-radius: 8px;
   min-width: 100px;
-  max-width: fit-content;
+  max-width: 139px;
 }
 #sortSelect {
   padding: 0.5rem;
   border-radius: 8px;
   font-weight: 600;
   font-family: 'Poppins', sans-serif;
-  right: 0;
+  white-space: nowrap;
+  height: 38.4px;
 }
 
 #sortSelect option {
@@ -311,7 +313,7 @@ main {
 .song-list {
   list-style: none;
   padding: 0 1rem;
-  animation: slideIn 1s ease;
+  animation: slideIn 1s ease-in-out;
 }
 
 .song-list li {
