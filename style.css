@@ -294,7 +294,7 @@ main {
   font-size: 1rem;
   border-radius: 8px;
   min-width: 100px;
-  max-width: 139px;
+  max-width: 192px;
 }
 /*#sortSelect {
   padding: 0.5rem;
@@ -323,12 +323,13 @@ main {
   cursor: pointer;
   font-weight: 600;
   height: 38.4px;
+  width: 12rem;
 }
 
 .dropdown-menu {
   position: absolute;
   font-family: 'Poppins', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   top: 103%;
   left: 0;
   background-color: #fff;
