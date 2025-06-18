@@ -43,7 +43,7 @@
   
   <main>
 
-     <div id="postiCounter" style="font-size: 1rem; font-weight: bold; padding: 8px; background: #1e2b30; border-radius: 8px; margin-top: 8px; text-align: center; color: rgb(255, 255, 255);">
+     <div id="postiCounter" style="font-size: 1rem; font-weight: bold; padding: 8px; border-radius: 8px; margin-top: 8px; text-align: center; color: rgb(255, 255, 255);">
   Posti prenotati: 0 / 0
 </div>
     <div class="prenota-title">
@@ -61,7 +61,7 @@
   <button id="dropdownButton" class="dropdown-btn">🎵​Ordina per canzone ▾</button>
   <ul id="dropdownMenu" class="dropdown-menu">
     <li data-value="title">🎵​Ordina per canzone</li>
-    <li data-value="artist">🎤​Ordina per artista</li>
+    <li id="borderDropdown" data-value="artist">🎤​Ordina per artista</li>
     <li data-value="free">✅​Solo brani liberi</li>
   </ul>
 </div>
@@ -74,15 +74,6 @@
     <section id="songSection"> 
       <ul id="songList" class="song-list"></ul>
     </section>
-
-   <!-- <section id="reservationForm" class="hidden">
-      <h2>Inserisci il tuo nome</h2>
-      <form>
-        <input type="text" id="userName" placeholder="Nome" required />
-        <button type="submit" class="btn">Conferma Prenotazione</button>
-        <button type="button" id="cancelReservation" class="btn btn-secondary">Annulla</button>
-      </form>
-    </section>-->
 
     <section id="waitingSection" class="hidden">
       <h2 id="waitingMsg">Attendi il tuo turno</h2>
