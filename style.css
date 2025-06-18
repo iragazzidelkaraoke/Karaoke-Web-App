@@ -280,6 +280,12 @@ main {
   padding: 1rem;
 }
 
+#filterBars .controls {
+  display: flex;
+  justify-content: space-between;
+  text-align: justify;
+  width: 100%;
+}
 
 #searchInput {
   flex: 1;
@@ -287,11 +293,19 @@ main {
   font-size: 1rem;
   border-radius: 8px;
   min-width: 100px;
-  max-width: 500px;
+  max-width: fit-content;
 }
 #sortSelect {
   padding: 0.5rem;
   border-radius: 8px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  right: 0;
+}
+
+#sortSelect option {
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
 }
 
 .song-list {
@@ -301,7 +315,8 @@ main {
 }
 
 .song-list li {
-  font-weight: bold;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
   padding: 1rem;
   margin-bottom: 0.5rem;
   background: linear-gradient(300deg, #eee, #ffffffa0);
@@ -521,6 +536,8 @@ main {
 #editorPanel .div1 {
   background: #f0fdff;
 }
+
+
 
 body .song-list .btn {
   background: #db4d81;
