@@ -197,13 +197,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const editorTableBody = document.querySelector("#editorTable tbody");
 
  //cost search and filter bar
-  const searchBar = document.getElementById("filterBars");
-  const searchInput = document.getElementById("searchInput");
-  const sortSelect = document.getElementById("sortSelect");
+  //const searchBar = document.getElementById("filterBars");
+  //const searchInput = document.getElementById("searchInput");
+  //const sortSelect = document.getElementById("sortSelect");
   
 
+const dropdown = document.getElementById("customDropdown");
+const dropdownBtn = document.getElementById("dropdownButton");
+const dropdownMenu = document.getElementById("dropdownMenu");
 
+let sortValueWrapper = { value: "title" }; // meglio usare nome diverso
 
+dropdownBtn.addEventListener("click", () => {
+  dropdown.classList.toggle("open");
+});
+
+dropdownMenu.querySelectorAll("li").forEach((item) => {
+  item.addEventListener("click", () => {
+    const selected = item.getAttribute("data-value");
+    sortValueWrapper.value = selected;
+    dropdownBtn.textContent = item.textContent + " ▾";
+    dropdown.classList.remove("open");
+    renderSongs();
+  });
+});
+
+document.addEventListener("click", (e) => {
+  if (!dropdown.contains(e.target)) {
+    dropdown.classList.remove("open");
+  }
+});
 
 
 
@@ -323,13 +346,13 @@ set(ref(db), "lock123");
 function renderSongs() {
   songList.innerHTML = "";
   const search = searchInput.value.toLowerCase();
-  const sortValue = sortSelect.value;
+  const sortValue = sortValueWrapper.value;
 
 
   if (editorMode) {
     infoSection.classList.add("hidden");
     frontSign.classList.add("hidden");
-    searchBar.classList.add("hidden");
+    //searchBar.classList.add("hidden");
     songSection.classList.add("hidden");
     waitingSection.classList.add("hidden");
     editorPanel.classList.remove("hidden");
@@ -346,15 +369,15 @@ function renderSongs() {
   }
 
   songSection.classList.remove("hidden");
-  searchBar.classList.remove("hidden");
+  //searchBar.classList.remove("hidden");
   frontSign.classList.remove("hidden");
 
   const sorted = [...canzoni].sort((a, b) => {
-    const [aTitle, aArtist] = a.split(" - ");
-    const [bTitle, bArtist] = b.split(" - ");
-    if (sortSelect.value === "title") return aTitle.localeCompare(bTitle);
-    if (sortSelect.value === "artist") return aArtist.localeCompare(bArtist);
-    return 0;
+  const [aTitle, aArtist] = a.split(" - ");
+  const [bTitle, bArtist] = b.split(" - ");
+  if (sortValue === "title") return aTitle.localeCompare(bTitle);
+  if (sortValue === "artist") return aArtist.localeCompare(bArtist);
+  return 0;
   });
 
   let count = 0;
@@ -403,7 +426,7 @@ if (count === 0) {
 }
 
 
-sortSelect.addEventListener("change", renderSongs);
+//sortSelect.addEventListener("change", renderSongs);
 searchInput.addEventListener("input", renderSongs);
 
 
