@@ -785,6 +785,8 @@ button {
   width: 15rem;
   font-size: 1rem;
   margin: 1rem;
+  width: fit-content;
+
   
 }
 
@@ -819,3 +821,5 @@ button {
   letter-spacing: 1px;
   word-spacing: 0px;
 }
+
+
