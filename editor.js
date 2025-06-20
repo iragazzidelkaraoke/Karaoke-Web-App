@@ -299,7 +299,7 @@ function save() {
     updateCurrentSongIndexDisplay();
   }
 
-function renderEditorTable() {
+/*function renderEditorTable() {
   editorTableBody.innerHTML = "";
   canzoni.forEach((song, index) => {
     const row = document.createElement('tr');
@@ -331,7 +331,78 @@ function renderEditorTable() {
 
     editorTableBody.appendChild(row);
   });
+}*/
+
+function renderEditorTable() {
+  const scalettaLista = document.getElementById("scalettaLista");
+  if (!scalettaLista) return;
+  scalettaLista.innerHTML = "";
+
+  canzoni.forEach((song, index) => {
+    const li = document.createElement("li");
+
+    // ➜ nome completo (se esiste)
+    const pren = prenotazioni.find(p => p.song === song);
+    const fullName = pren ? pren.name : "";
+
+    // ➜ nome da mostrare (prima parola + … se >1 parola)
+    let displayName = fullName;
+    if (fullName && fullName.trim().includes(" ")) {
+      displayName = fullName.trim().split(" ")[0] + "…";
+    }
+
+    li.innerHTML = `
+      <div class="svg-edit" style="display:flex;flex-direction:column;">
+        <span><strong>${index + 1}.</strong> <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16.5c0 1.3807-1.1193 2.5-2.5 2.5C8.11929 19 7 17.8807 7 16.5S8.11929 14 9.5 14c1.3807 0 2.5 1.1193 2.5 2.5Zm0 0V5c2.5 0 6 2.5 4.5 7"/>
+</svg>
+ ${song}</span>
+        ${fullName ? `<span class="utente-troncato"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+</svg> ${displayName}</span>` : ""}
+      </div>
+    `;
+
+    // classi di stato
+    if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
+    else if (index < branoCorrente - 1) li.classList.add("suonati");
+
+    // clicca per editare
+    li.addEventListener("click", () => {
+      apriMenuModifica(index, song, fullName || null);   // ⬅️ passiamo il nome completo
+    });
+
+    scalettaLista.appendChild(li);
+  });
+
+  scrollToCurrentSong();
 }
+
+
+function scrollToCurrentSong() {
+  const list = document.getElementById("scalettaLista");
+  const wrapper = document.getElementById("scalettaWrapper");
+  if (!list || !wrapper) return;
+
+  const items = list.children;
+  if (branoCorrente === 0 || branoCorrente - 1 >= items.length) return;
+
+  const currentEl = items[branoCorrente - 1];
+
+  if (currentEl) {
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const itemRect = currentEl.getBoundingClientRect();
+    const scrollOffset = (itemRect.top + wrapper.scrollTop) - wrapperRect.top - (wrapper.clientHeight / 2) + (currentEl.offsetHeight / 2);
+
+    wrapper.scrollTo({
+      top: scrollOffset,
+      behavior: 'smooth'
+    });
+  }
+}
+
+
+
 
 
 function apriMenuModifica(index, branoCorrente, utenteCorrente) {
@@ -343,11 +414,14 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
   const popupCancelReservationBtn = document.getElementById("popupCancelReservation");
   const popupRemoveSongBtn = document.getElementById("popupRemoveSong");
   const popupCloseBtn = document.getElementById("popupClose");
+  const label = document.getElementById("popupPrenotatoDa");
 
   // Mostra il popup
   popup.classList.remove("hidden");
   // Mostra la sezione modifica nome e nasconde quella con i bottoni
   popupEditName.classList.remove("hidden");
+
+  label.textContent = utenteCorrente ? `Prenotato da: ${utenteCorrente}` : "Nessun prenotato";
 
 
   popupSongNameInput.value = branoCorrente;
@@ -417,6 +491,10 @@ popupCancelReservationBtn.onclick = () => {
   popupCloseBtn.onclick = () => {
     popup.classList.add("hidden");
   };
+
+  popup.addEventListener("click", (e) => {
+  if (e.target === popup) popup.classList.add("hidden");
+});
 }
 
 
@@ -532,11 +610,15 @@ new Sortable(editableSongList, {
   nextSongBtn.addEventListener("click", () => {
     branoCorrente++;
     save();
+    renderEditorTable();
+    scrollToCurrentSong();
   });
 
   prevSongBtn.addEventListener("click", () => {
     if (branoCorrente > 0) branoCorrente--;
     save();
+    renderEditorTable();
+    scrollToCurrentSong();
   });
 
   currentSongInput.addEventListener("change", () => {
@@ -544,6 +626,8 @@ new Sortable(editableSongList, {
     if (!isNaN(val) && val >= 0) {
       branoCorrente = val;
       save();
+      renderEditorTable();
+      scrollToCurrentSong();
     }
   });
 

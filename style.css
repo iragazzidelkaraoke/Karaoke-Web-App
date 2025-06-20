@@ -116,6 +116,7 @@ img {
   }
 
   .modal-content {
+    position: relative;
     background: linear-gradient(290deg, #ccd8ff, #fdedf3);
     padding: 2rem;
     border-radius: 16px;
@@ -131,12 +132,33 @@ img {
     font-size: 1.5rem;
     color: #333;
   }
+  .modal-content h3{
+    font-size: 20px;
+  }
+  .modal-content label{
+    font-size: 18px;
+  }
 
+  #popupSongName {
+    margin-top: 16px;
+    width: 90%;
+    text-align: center;
+  }
+
+  #popupPrenotatoDa {
+    background: linear-gradient(150deg, #e7ecff, #ffffff75);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  #popupEditName button{
+    width: 100%;
+    
+  }
   .modal-content input {
     width: fit-content;
     padding: 0.7rem;
     margin-bottom: 1rem;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 1rem;
     outline: none;
@@ -584,10 +606,10 @@ main {
  .div1 {
   
   margin: 1rem 0;
-  background: linear-gradient(290deg, #ebefff, #fff3f7);
+  background: linear-gradient(290deg, #ccd8ff, #fdedf3);
 
   border-radius: 8px;
-  padding: .2rem .4rem;
+  padding: 24PX .4rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
 }
  .addSong {
@@ -612,15 +634,6 @@ main {
 
 
 
- section {
-  
-  margin: 1rem 0;
-    background: linear-gradient(150deg, #f8c4d7, #e2b7f3);
-
-  border-radius: 8px;
-  padding: .2rem 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-}
 
  h1{
   font-size: 3rem;
@@ -628,10 +641,7 @@ main {
   margin: 2rem;
 }
 
- .div1 {
-  background: linear-gradient(150deg, #fdd0ff, #b7bdf3);
 
-}
 
 
 
@@ -766,7 +776,7 @@ body .main-prenota {
 }
 
 .modal-content {
-  background: linear-gradient(290deg, #e5eafc, #fef5f8);
+  background: linear-gradient(150deg, #cfd9ff, #f1c4fa);
   padding: 20px;
   border-radius: 8px;
   max-width: 400px;
@@ -881,7 +891,8 @@ button {
   align-items: center;
   flex-wrap: wrap; /* per responsività */
   gap: 1rem;
-  padding: 24px 0px 12px;
+  padding: 0;
+  margin: 10px 0;
 }
 
 .icons-title {
@@ -916,7 +927,7 @@ button {
   border: 1px solid #ccc;
   font-size: 1rem;
   font-family: 'Poppins', sans-serif;
-  width: 9rem;
+  width: 6rem;
 }
 
 .editor-input-group .btn {
@@ -938,12 +949,125 @@ button {
   font-size: 16px;
  }
 
- section {
-  padding-bottom: 30px;
+ .editor-main section {
+  margin: 1rem 0;
+  background: linear-gradient(150deg, #f8c4d7, #e2b7f3);
+  border-radius: 8px;
+  padding: 24px 24px 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  
   
  }
 
  .impost input{
-  width: 100%;
+  width: 94%;
  }
 
+
+ .editor-main section button{
+  margin: 8px 0;
+ }
+
+ .scaletta-scroll {
+  max-height: 350px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  margin: 1rem 0 0 0;
+  background: linear-gradient(290deg, #ccd8ff, #fdedf3);
+  border-radius: 8px;
+  padding: 0;
+ 
+}
+
+.scaletta-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scaletta-lista li {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: background 0.3s;
+  background: #ffffffaa;
+}
+
+.scaletta-lista li.playing {
+  position: relative;
+  background: linear-gradient(150deg, #d1f5d3, #d1f5d38e) ;
+  font-weight: bold;
+  color: #155724;
+}
+
+.scaletta-lista li.playing > div > span:first-child {
+  padding-left: 20px;
+}
+
+.scaletta-lista li.playing::before {
+  content: "▶";
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: #198754;
+}
+
+.scaletta-lista li.suonati {
+  background: linear-gradient(150deg, #c1c1c1, #d8d8d871 );
+  color: #555;
+  text-decoration: line-through;
+}
+
+.scaletta-lista li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scaletta-lista li span {
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.popup-close{
+  position:absolute;
+  top:8px;
+  right:12px;
+  background:none;
+  border:none;
+  font-size:1.5rem;
+  line-height:1;
+  cursor:pointer;
+  color:#666;
+  justify-content: right;  
+}
+
+.svg-edit span {
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.utente-troncato {
+  background-color: #bbedff;
+  padding: 5px 10px;
+  border-radius: 15px;
+  border: 1px solid #45a9b4;
+  width: fit-content;
+  margin-top: 10px;
+  margin-left: 25px;
+}
+.scaletta-scroll li{
+  background: linear-gradient(150deg, #e6f9ff4c, #ffffff00);
+  border: 1.5px solid #ccc;
+}

@@ -105,7 +105,7 @@
 </div>
 
 
-  <main>    
+  <main class="editor-main">    
 
  
 
@@ -137,7 +137,7 @@
 
 
  
-<table id="editorTable" style="width: 100%; border-collapse: collapse;">
+<!--<table id="editorTable" style="width: 100%; border-collapse: collapse;">
   <thead>
     <tr>
       <th>#</th>
@@ -148,18 +148,37 @@
   </thead>
   <tbody></tbody>
 </table>
+-->
+
+<div id="scalettaWrapper" class="scaletta-scroll">
+  <ul id="scalettaLista" class="scaletta-lista"></ul>
+</div>
+
 
 <div id="popupModal" class="modal hidden">
   <div class="modal-content">
     <h3>Modifica brano</h3>
 
     <section id="popupEditName" class="popup-section">
-      <label>Nuovo nome del brano:</label>
+      <label>Nome del brano:</label>
       <input type="text" id="popupSongName" />
-      <button class="btn" id="popupSaveName">Salva</button>
-      <button class="btn" id="popupRemoveSong">Rimuovi brano</button>
-      <button class="btn" id="popupCancelReservation">Annulla prenotazione</button>
-      <button class="btn btn-secondary" id="popupClose">Chiudi</button>
+
+      <p id="popupPrenotatoDa" style="margin:0 0 1rem 0;color:#555;font-style:italic;"></p>
+
+      
+      <button class="btn btn-third" id="popupRemoveSong"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+</svg>
+ Rimuovi brano</button>
+      <button class="btn btn-secondary" id="popupCancelReservation"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12h4M4 18v-1a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Zm8-10a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+</svg>
+Annulla prenotazione</button>
+      <button class="btn" id="popupSaveName"><svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M11 16h2m6.707-9.293-2.414-2.414A1 1 0 0 0 16.586 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7.414a1 1 0 0 0-.293-.707ZM16 20v-6a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v6h8ZM9 4h6v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V4Z"/>
+</svg>
+Salva</button>
+      <button class="btn btn-secondary popup-close" id="popupClose">✕</button>
     </section>
     </div>
   </div>
