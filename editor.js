@@ -239,6 +239,8 @@ onValue(reservationsRef, snapshot => {
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
     updatePostiCounter();
+    renderEditorList();
+    scrollToCurrentSong();
   }
 });
 
