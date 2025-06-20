@@ -521,8 +521,9 @@ main {
 }
 
 #prenotaSection input {
-  width: 15rem;
+  width: 89%;
   margin: 1rem 0;
+
 }
 
 #bookingForm {
@@ -534,6 +535,10 @@ main {
   padding: 1.5rem 0;
 }
 
+#bookingForm .btn, #userName{
+  width: 95%;
+}
+
 
 #waitingSection{
   text-align: center;
@@ -543,11 +548,15 @@ main {
   margin: 1rem 0;
 }
 
+#waitingSection .btn {
+  width: 95%;
+}
+
 .wait-turno{
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  padding: 1.5rem 0;
-  margin: 0 3rem;
+  padding: 1.5rem 15px;
+  margin: 0 .1rem;
   background: #ffffff88;
 }
 
@@ -694,6 +703,7 @@ body .main-prenota {
   /*background-color: #f5f5f5;*/
   padding: .5rem;
   border-radius: 8px;
+  
 }
 
 .main-prenota label{
@@ -807,6 +817,10 @@ button {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   text-align: center;
   animation: slideIn 1s ease-in-out;
+}
+
+.accNeg h1 {
+  font-size: 24px;
 }
 
 .accNegWrap {
