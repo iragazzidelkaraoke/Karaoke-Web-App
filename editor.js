@@ -598,9 +598,22 @@ downloadExcelBtn.addEventListener("click", async () => {
 
 new Sortable(editableSongList, {
   animation: 150,
-  delay: 500, // 0.5 secondi
-  delayOnTouchOnly: true, // solo su dispositivi touch
-  onEnd: () => {
+  delay: 500,
+  delayOnTouchOnly: true,
+
+  onChoose: (evt) => {
+    evt.item.classList.add("drag-ready");
+
+    // Vibrazione su dispositivi che la supportano
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(50);
+    }
+  },
+
+
+  ghostClass: "drag-ghost",
+
+  onEnd: (evt) => {
     const updated = Array.from(editableSongList.children).map(li => {
       const raw = li.textContent.trim();
       return raw.replace(/^\d+\.\s*/, "");
@@ -610,6 +623,7 @@ new Sortable(editableSongList, {
     renderEditorList();
   }
 });
+
 
 
   nextSongBtn.addEventListener("click", () => {

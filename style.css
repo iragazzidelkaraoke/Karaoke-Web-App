@@ -625,7 +625,7 @@ main {
 
  .div1 {
   
-  margin: 0;
+  margin: 24px 0;
   background: linear-gradient(290deg, #ccd8ff, #fdedf3);
 
   border-radius: 8px;
@@ -1100,4 +1100,17 @@ button {
 .scaletta-scroll li{
   background: linear-gradient(150deg, #e6f9ff4c, #ffffff00);
   border: 1.5px solid #ccc;
+}
+
+.drag-ready {
+  transform: scale(1.05);
+  background-color: #ffe6f0 !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease;
+  z-index: 1000;
+}
+
+.drag-ghost {
+  opacity: 0.3;
+  background-color: transparent;
 }
