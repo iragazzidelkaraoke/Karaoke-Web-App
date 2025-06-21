@@ -97,6 +97,19 @@ function updateStatus() {
 
   const diff = index - (currentIndex - 1);
 
+
+  if (diff <= 0) {
+  cancelBtn.classList.add("hidden");
+} else {
+  cancelBtn.classList.remove("hidden");
+
+  if (diff < annullaLimite +1) {
+  cancelBtn.classList.add("btn-disabled");
+} else {
+  cancelBtn.classList.remove("btn-disabled");
+}
+}
+
   if (diff > 1) {
     waitingMsg.innerHTML = `<strong>Preparati a cantare:</strong><br> <div class='wait-brano'>${user.song}</div><br><div class='wait-turno'>Mancano ${diff} brani al tuo turno.</div>`;
   } else if (diff === 1) {

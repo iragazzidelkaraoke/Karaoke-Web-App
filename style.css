@@ -435,7 +435,15 @@ main {
   background-color: #f9d3e3;
   cursor: move;
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  text-align: left;
+  justify-content: left;
+  gap: .5rem;
+
 }
+
+
+
+
 
 .song-list button{
     padding: 0.5rem 1rem;
@@ -486,8 +494,10 @@ main {
 }
 
 .btn-disabled {
-  background-color: #aaa !important;
+  background-color: #a4a4a4 !important;
   cursor: not-allowed;
+  text-decoration: line-through;
+  opacity: 0.8;  
 }
 
 .hidden {
@@ -552,6 +562,7 @@ main {
   width: 95%;
 }
 
+
 .wait-turno{
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
@@ -614,13 +625,14 @@ main {
 
  .div1 {
   
-  margin: 1rem 0;
+  margin: 0;
   background: linear-gradient(290deg, #ccd8ff, #fdedf3);
 
   border-radius: 8px;
-  padding: 24PX .4rem;
+  padding: 2px .4rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
 }
+
  .addSong {
   
   margin: 1rem 0;
@@ -842,10 +854,10 @@ button {
   /*background-color: #ffffff;*/
   padding: .5rem;
   border-radius: 8px;
-  width: 15rem;
+  width: 83%;
   font-size: 1rem;
   margin: 1rem;
-  width: fit-content;
+  
 
   
 }
@@ -871,6 +883,10 @@ button {
   padding: .5rem;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.requests .container .btn{
+  width: 90%;
 }
 
 

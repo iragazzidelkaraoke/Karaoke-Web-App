@@ -598,16 +598,19 @@ downloadExcelBtn.addEventListener("click", async () => {
 
 new Sortable(editableSongList, {
   animation: 150,
+  delay: 500, // 0.5 secondi
+  delayOnTouchOnly: true, // solo su dispositivi touch
   onEnd: () => {
     const updated = Array.from(editableSongList.children).map(li => {
       const raw = li.textContent.trim();
-      return raw.replace(/^\d+\.\s*/, ""); 
+      return raw.replace(/^\d+\.\s*/, "");
     });
     canzoni = updated;
-    save();                    
-    renderEditorList();       
+    save();
+    renderEditorList();
   }
 });
+
 
   nextSongBtn.addEventListener("click", () => {
     branoCorrente++;
