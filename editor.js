@@ -275,7 +275,7 @@ addSongBtn.addEventListener("click", () => {
   songTitleInput.focus();
 });
 
-// Chiudi modale con X o Annulla
+// Chiudi modale con .btn
 document.querySelectorAll(".close-add").forEach(btn => {
   btn.addEventListener("click", () => {
     addSongModal.classList.add("hidden");
