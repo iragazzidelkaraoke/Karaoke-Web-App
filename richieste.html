@@ -12,7 +12,17 @@
      <div class="centerLogo" > <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
    </header>
   <main>
-    
+    <!-- MODAL GENERALE PER MESSAGGI -->
+<div id="customAlertModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="popup-close close-alert">×</button>
+    <div id="customAlertMessage"></div>
+    <div style="margin-top: 1rem;">
+      <button class="btn close-alert">OK</button>
+    </div>
+  </div>
+</div>
+
   <section class="requests">
     <h1>Richiesta Brani Futuri</h1>
     <div class="container">
@@ -51,44 +61,96 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Salva nuova richiesta aggregando su titolo+artista
-    async function salvaRichiesta() {
-      const titolo = document.getElementById('titoloInput').value.trim();
-      const artista = document.getElementById('artistaInput').value.trim();
+function showCustomAlert(message, options = {}) {
+  const modal = document.getElementById("customAlertModal");
+  const msgBox = document.getElementById("customAlertMessage");
 
-      if (!titolo || !artista) {
-        alert("Inserisci sia il titolo del brano che l'artista.");
-        return;
-      }
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
 
-      const chiave = `${titolo.toLowerCase()}___${artista.toLowerCase()}`;
-      const richiestaRef = ref(db, `richieste/${chiave}`);
-      const snapshot = await get(richiestaRef);
+  const buttons = modal.querySelectorAll(".close-alert");
+  const shouldShowButtons = options.buttons !== false;
 
-      if (snapshot.exists()) {
-        const dati = snapshot.val();
-        await update(richiestaRef, {
-          count: dati.count + 1
-        });
-      } else {
-        await set(richiestaRef, {
-          titolo: titolo,
-          artista: artista,
-          count: 1
-        });
-      }
+  buttons.forEach(btn => {
+    btn.style.display = shouldShowButtons ? "inline-block" : "none";
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+    };
+  });
 
-      document.getElementById('titoloInput').value = '';
-      document.getElementById('artistaInput').value = '';
-
-      const messaggio = document.getElementById('messaggioConferma');
-      messaggio.textContent = "🎵 Grazie del contributo! Ora verrai reindirizzato alla pagina di prenotazioni.";
-      messaggio.style.display = 'block';
-
-      setTimeout(() => {
-        window.location.href = 'home.html';
-      }, 3000);
+  // Chiudi clic esterno solo se ci sono i bottoni
+  document.addEventListener("mousedown", function handleOutsideClick(event) {
+    if (
+      !modal.classList.contains("hidden") &&
+      !modal.querySelector(".modal-content").contains(event.target) &&
+      shouldShowButtons
+    ) {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+      document.removeEventListener("mousedown", handleOutsideClick);
     }
+  });
+}
+
+
+
+    // Salva nuova richiesta aggregando su titolo+artista
+async function salvaRichiesta() {
+  const titolo = document.getElementById('titoloInput').value.trim();
+  const artista = document.getElementById('artistaInput').value.trim();
+
+  if (!titolo || !artista) {
+    showCustomAlert("Inserisci sia il titolo del brano che l'artista.");
+    return;
+  }
+
+  const chiave = `${titolo.toLowerCase()}___${artista.toLowerCase()}`;
+  const richiestaRef = ref(db, `richieste/${chiave}`);
+  const snapshot = await get(richiestaRef);
+
+  if (snapshot.exists()) {
+    const dati = snapshot.val();
+    await update(richiestaRef, {
+      count: dati.count + 1
+    });
+  } else {
+    await set(richiestaRef, {
+      titolo: titolo,
+      artista: artista,
+      count: 1
+    });
+  }
+
+// Pulizia dei campi
+document.getElementById('titoloInput').value = '';
+document.getElementById('artistaInput').value = '';
+
+let seconds = 5;
+const countdownHTML = `<br><em>Verrai reindirizzato tra <span id="countdown">${seconds}</span> secondi...</em>`;
+
+showCustomAlert(
+  `🎵 Grazie del contributo!${countdownHTML}`,
+  { buttons: false } // nasconde OK e ×
+);
+
+// Aggiorna countdown ogni secondo
+const interval = setInterval(() => {
+  seconds--;
+  const countdownSpan = document.getElementById("countdown");
+  if (countdownSpan) countdownSpan.textContent = seconds;
+
+  if (seconds <= 0) {
+    clearInterval(interval);
+    document.getElementById("customAlertModal").classList.add("hidden");
+    window.location.href = 'home.html';
+  }
+}, 1000);
+
+
+}
+
+    
 
     document.getElementById("inviaRichiestaBtn").addEventListener("click", salvaRichiesta);
 

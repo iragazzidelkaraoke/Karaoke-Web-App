@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <script type="module" src="waiting.js"></script>
+  
   <script type="module" src="./presenza.js"></script>
 </head>
 <body>
@@ -32,9 +32,32 @@
       <h2 id="waitingMsg">Caricamento...</h2>
       <button id="cancelSlotBtn" class="btn btn-secondary">Annulla Iscrizione</button>
     </section>
+
+<div id="customAlertModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="popup-close close-alert">×</button>
+    <div id="customAlertMessage"></div>
+    <div style="margin-top: 1rem;">
+      <button class="btn close-alert">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="customConfirmModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="popup-close close-confirm">×</button>
+    <div id="customConfirmMessage"></div>
+    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+      <button class="btn btn-secondary close-confirm">Annulla</button>
+      <button class="btn" id="confirmYesBtn">Conferma</button>
+    </div>
+  </div>
+</div>
+
+
   </main>
 
-
+<script type="module" src="waiting.js"></script>
 
 </body>
 </html>

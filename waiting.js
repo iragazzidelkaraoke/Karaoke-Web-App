@@ -135,18 +135,78 @@ function updateStatus() {
   }
 }
 
+let modalJustOpened = false;
+
+function showCustomAlert(message) {
+  const modal = document.getElementById("customAlertModal");
+  const msgBox = document.getElementById("customAlertMessage");
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
+  modalJustOpened = true;
+  setTimeout(() => modalJustOpened = false, 300);
+}
+
+document.addEventListener("mousedown", function (event) {
+  const modal = document.getElementById("customAlertModal");
+  const content = modal.querySelector(".modal-content");
+
+  if (!modal.classList.contains("hidden") &&
+      !content.contains(event.target) &&
+      !modalJustOpened) {
+    closeCustomAlert();
+  }
+});
+
+
+function closeCustomAlert() {
+  const modal = document.getElementById("customAlertModal");
+  modal.classList.add("hidden");
+
+}
+
+document.querySelectorAll(".close-alert").forEach(button => {
+  button.addEventListener("click", closeCustomAlert);
+});
+
+
+function showCustomConfirm(message, onConfirm) {
+  const modal = document.getElementById("customConfirmModal");
+  const msgBox = document.getElementById("customConfirmMessage");
+  const yesBtn = document.getElementById("confirmYesBtn");
+
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
+
+  // Chiude comunque se clic su "Annulla" o X
+  document.querySelectorAll(".close-confirm").forEach(btn => {
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+    };
+  });
+
+  // Associa una sola volta il comportamento al bottone "Conferma"
+  yesBtn.onclick = () => {
+    modal.classList.add("hidden");
+    if (typeof onConfirm === "function") onConfirm();
+  };
+}
+
+
+
 cancelBtn.onclick = () => {
   const filtered = reservations.filter(r => r && r.name);
   const index = filtered.findIndex(r => r.name === userName);
   const diff = index - currentIndex;
 
-  if (diff < annullaLimite) {
-    alert(`Non puoi annullare la prenotazione: mancano solo ${diff + 1} brani.`);
-    return;
-  }
+if (diff < annullaLimite) {
+  const count = diff + 1;
+  const label = count === 1 ? "brano" : "brani";
+  showCustomAlert(`Non puoi annullare la prenotazione: manca${count === 1 ? '' : 'no'} solo ${count} ${label} al tuo turno.`);
+  return;
+}
 
-  if (!confirm("Vuoi annullare la prenotazione?")) return;
 
+showCustomConfirm("Vuoi annullare la prenotazione? 😔", () => {
   const originalIndex = reservations.findIndex(r => r && r.name === userName);
   if (originalIndex !== -1) {
     reservations.splice(originalIndex, 1);
@@ -157,4 +217,7 @@ cancelBtn.onclick = () => {
       sessionStorage.removeItem("songToBook");
     }, 100);
   }
+});
+return;
+
 };

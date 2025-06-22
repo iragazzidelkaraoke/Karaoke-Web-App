@@ -805,6 +805,13 @@ body .main-prenota {
   width: 90%;
 }
 
+#customAlertMessage {
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 15px;
+}
+
 .popup-section {
   margin-top: 15px;
 }
