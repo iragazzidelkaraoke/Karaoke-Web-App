@@ -101,17 +101,36 @@
 </div>
 
 <div style="position: fixed; top: 35px; right: 1rem; background: #111; color: white; padding: 6px 12px; font-size: 0.9rem; border-radius: 10px; z-index: 999;">
-  👥 Live: <span id="online-counter">0</span>
+  👥: <span id="online-counter">0</span>
 </div>
 
 
   <main class="editor-main">    
+<!-- MODAL DI ALERT -->
+<div id="customAlertModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="popup-close close-alert">×</button>
+    <div id="customAlertMessage"></div>
+    <div style="margin-top: 1rem;">
+      <button class="btn close-alert">OK</button>
+    </div>
+  </div>
+</div>
 
- 
+<!-- MODAL DI CONFERMA -->
+<div id="customConfirmModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="popup-close close-confirm">×</button>
+    <div id="customConfirmMessage"></div>
+    <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+      <button class="btn btn-secondary close-confirm">Annulla</button>
+      <button class="btn" id="confirmYesBtn">Conferma</button>
+    </div>
+  </div>
+</div>
 
-   
 
-           <div id="postiCounter" style="font-size: 1rem; font-weight: bold; padding: 8px; background: #1e2b30; border-radius: 8px; margin-top: 8px; text-align: center; color: rgb(255, 255, 255);">
+<div id="postiCounter" style="font-size: 1rem; font-weight: bold; padding: 8px; background: #1e2b30; border-radius: 8px; margin-top: 8px; text-align: center; color: rgb(255, 255, 255);">
   Posti prenotati: 0 / 0
 </div>
     

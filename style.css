@@ -812,6 +812,13 @@ body .main-prenota {
   margin-top: 15px;
 }
 
+#customConfirmMessage {
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 15px;
+}
+
 .popup-section {
   margin-top: 15px;
 }

@@ -67,6 +67,79 @@ const db = getDatabase(app);
 
 let maxPrenotazioniDaDb = 25;
 let prenotazioniDaDb = [];
+function showCustomAlert(message, options = {}) {
+  const modal = document.getElementById("customAlertModal");
+  const msgBox = document.getElementById("customAlertMessage");
+
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
+
+
+  function handleEnterAlert(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+      document.removeEventListener("keydown", handleEnterAlert);
+    }
+  }
+document.addEventListener("keydown", handleEnterAlert);
+
+
+  const buttons = modal.querySelectorAll(".close-alert");
+  const shouldShowButtons = options.buttons !== false;
+
+  buttons.forEach(btn => {
+    btn.style.display = shouldShowButtons ? "inline-block" : "none";
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+    };
+  });
+
+  document.addEventListener("mousedown", function handleOutsideClick(event) {
+    if (
+      !modal.classList.contains("hidden") &&
+      !modal.querySelector(".modal-content").contains(event.target) &&
+      shouldShowButtons
+    ) {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+  });
+}
+
+function showCustomConfirm(message, onConfirm) {
+  const modal = document.getElementById("customConfirmModal");
+  const msgBox = document.getElementById("customConfirmMessage");
+  const yesBtn = document.getElementById("confirmYesBtn");
+
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
+
+  function handleEnterConfirm(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      modal.classList.add("hidden");
+      if (typeof onConfirm === "function") onConfirm();
+      document.removeEventListener("keydown", handleEnterConfirm);
+    }
+  }
+document.addEventListener("keydown", handleEnterConfirm);
+
+
+  document.querySelectorAll(".close-confirm").forEach(btn => {
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+    };
+  });
+
+  yesBtn.onclick = () => {
+    modal.classList.add("hidden");
+    if (typeof onConfirm === "function") onConfirm();
+  };
+}
 
 function generaTokenCasuale() {
   
@@ -79,25 +152,27 @@ function generaTokenCasuale() {
 }
 
 document.getElementById("generaToken").addEventListener("click", () => {
-  const conferma = confirm("Sei sicuro di voler generare un nuovo token?\nTutti gli utenti con il vecchio token perderanno l'accesso.");
+  showCustomConfirm(
+    "Sei sicuro di voler generare un nuovo token?<br><small>Tutti gli utenti con il vecchio token perderanno l'accesso.</small>",
+    () => {
+      const nuovoToken = generaTokenCasuale();
 
-  if (!conferma) return;
-
-  const nuovoToken = generaTokenCasuale();
-
-  set(ref(db, 'serata'), {
-    attiva: true,
-    token: nuovoToken
-  })
-    .then(() => {
-      alert("Nuovo token generato: " + nuovoToken);
-      new BroadcastChannel('token_channel').postMessage({ tipo: 'nuovo_token' });
-
-    })
-    .catch((error) => {
-      console.error("Errore nell'aggiornamento del token:", error);
-    });
+      set(ref(db, 'serata'), {
+        attiva: true,
+        token: nuovoToken
+      })
+        .then(() => {
+          showCustomAlert("Nuovo token generato:<br><strong>" + nuovoToken + "</strong>");
+          new BroadcastChannel('token_channel').postMessage({ tipo: 'nuovo_token' });
+        })
+        .catch((error) => {
+          console.error("Errore nell'aggiornamento del token:", error);
+          showCustomAlert("Errore durante la generazione del token.");
+        });
+    }
+  );
 });
+
 
 
 // Prima controlla subito se superato il limite
@@ -514,25 +589,29 @@ popupCancelReservationBtn.onclick = () => {
   });
 
 resetBtn.addEventListener("click", () => {
-  const conferma = confirm("Sei sicuro di voler resettare tutte le prenotazioni e le richieste?");
-  if (conferma) {
-    prenotazioni = [];
-    branoCorrente = 0;
+  showCustomConfirm(
+    "Sei sicuro di voler resettare tutte le prenotazioni e le richieste?",
+    () => {
+      prenotazioni = [];
+      branoCorrente = 0;
 
-    Promise.all([
-      remove(ref(db, "lockedSongs")),
-      remove(ref(db, "richieste"))
-    ])
-    .then(() => {
-      console.log("Prenotazioni e richieste resettate.");
-      save();
-      alert("Prenotazioni e richieste resettate.");
-    })
-    .catch((error) => {
-      console.error("Errore durante il reset:", error);
-    });
-  }
+      Promise.all([
+        remove(ref(db, "lockedSongs")),
+        remove(ref(db, "richieste"))
+      ])
+        .then(() => {
+          console.log("Prenotazioni e richieste resettate.");
+          save();
+          showCustomAlert("Prenotazioni e richieste resettate con successo.");
+        })
+        .catch((error) => {
+          console.error("Errore durante il reset:", error);
+          showCustomAlert("Errore durante il reset.");
+        });
+    }
+  );
 });
+
 
 
 downloadExcelBtn.addEventListener("click", async () => {
