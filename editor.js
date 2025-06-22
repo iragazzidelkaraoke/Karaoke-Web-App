@@ -35,8 +35,6 @@ function resetInactivityTimer() {
 
 
 
-
-
 // Eventi che resettano il timer
 window.addEventListener("mousemove", resetInactivityTimer);
 window.addEventListener("mousedown", resetInactivityTimer);

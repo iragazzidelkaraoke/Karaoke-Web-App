@@ -155,7 +155,7 @@ img {
     
   }
   .modal-content input {
-    width: fit-content;
+    width: 90%;
     padding: 0.7rem;
     margin-bottom: 1rem;
     border: 1px solid #ccc;
@@ -184,6 +184,8 @@ img {
   .modalPW .modal-content button:hover {
     background-color: #45a9b4;
   }
+
+
 
   #errorMessage {
     color: red;
@@ -816,7 +818,7 @@ body .main-prenota {
   font-family: 'Poppins', sans-serif;
   font-weight: bold;
   font-size: 18px;
-  margin-top: 15px;
+  margin: 15px 0;
 }
 
 .popup-section {
@@ -1128,3 +1130,8 @@ button {
   opacity: 0.3;
   background-color: transparent;
 }
+
+
+  .modal-content .btn { 
+    width: 95%;
+  }

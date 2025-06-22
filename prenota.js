@@ -12,6 +12,7 @@ import {
 import { database, goOffline, goOnline } from './firebase.js';
 
 
+
 let inactivityTimer;
 let isConnected = true;
 
