@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
  
   const newSongInput = document.getElementById("newSongInput");
-  const addSongBtn = document.getElementById("addSongBtn");
+  //const addSongBtn = document.getElementById("addSongBtn");
   const editableSongList = document.getElementById("editableSongList");
   const resetBtn = document.getElementById("resetBtn");
   const downloadExcelBtn = document.getElementById("downloadCSVBtn");
@@ -263,6 +263,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+const addSongBtn = document.getElementById("addSongBtn");
+const addSongModal = document.getElementById("addSongModal");
+const confirmAddSongBtn = document.getElementById("confirmAddSongBtn");
+const songTitleInput = document.getElementById("songTitleInput");
+const songArtistInput = document.getElementById("songArtistInput");
+
+// Mostra il modale quando si clicca sul +
+addSongBtn.addEventListener("click", () => {
+  songTitleInput.value = "";
+  songArtistInput.value = "";
+  addSongModal.classList.remove("hidden");
+  songTitleInput.focus();
+});
+
+// Chiudi modale con X o Annulla
+document.querySelectorAll(".close-add").forEach(btn => {
+  btn.addEventListener("click", () => {
+    addSongModal.classList.add("hidden");
+  });
+});
+
+// Conferma inserimento canzone
+confirmAddSongBtn.addEventListener("click", () => {
+  const titolo = songTitleInput.value.trim();
+  const artista = songArtistInput.value.trim();
+
+  if (!titolo || !artista) {
+    showCustomAlert("Inserisci sia il titolo che l'artista.");
+    return;
+  }
+
+  const nuovoBrano = `${titolo} - ${artista}`;
+  if (!canzoni.includes(nuovoBrano)) {
+    canzoni.push(nuovoBrano);
+    save(); // Salva dove necessario (Firebase o locale)
+    renderEditorList?.(); // Se hai una funzione per aggiornare la lista
+  }
+
+  addSongModal.classList.add("hidden");
+});
 
 
 
@@ -579,14 +619,14 @@ popupCancelReservationBtn.onclick = () => {
 
 
  
-  addSongBtn.addEventListener("click", () => {
+  /*addSongBtn.addEventListener("click", () => {
     const newSong = newSongInput.value.trim();
     if (newSong && !canzoni.includes(newSong)) {
       canzoni.push(newSong);
       save();
       newSongInput.value = "";
     }
-  });
+  });*/
 
 resetBtn.addEventListener("click", () => {
   showCustomConfirm(

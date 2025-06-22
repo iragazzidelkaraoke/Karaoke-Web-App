@@ -143,13 +143,27 @@
                <h3>Scaletta Completa</h3>
       </div>
              <div class="editor-input-group">
-         <input type="text" id="newSongInput" placeholder="Nuovo brano" />
+         <!--<input type="text" id="newSongInput" placeholder="Nuovo brano" />-->
                <button id="addSongBtn" class="btn">+</button>
        </div>
     </div>
      
        
-        
+
+
+      <div id="addSongModal" class="modal hidden">
+        <div class="modal-content">
+          <button class="popup-close close-add">×</button>
+          <h2>Aggiungi una canzone alla scaletta</h2>
+          <input type="text" id="songTitleInput" placeholder="Titolo del brano" style="margin: 1rem 0;" />
+          <input type="text" id="songArtistInput" placeholder="Nome dell'artista" style="margin-bottom: 1rem;" />
+          <div style="margin-top: 1rem;">
+            <button class="btn btn-secondary close-add">Annulla</button>
+            <button class="btn" id="confirmAddSongBtn">Aggiungi</button>
+          </div>
+        </div>
+      </div>
+
 
 
 
