@@ -41,6 +41,9 @@ function resetInactivityTimer() {
 }
 
 
+window.onload = function() {
+  document.getElementById("userName").focus();
+}
 
 
 // Eventi che resettano il timer
