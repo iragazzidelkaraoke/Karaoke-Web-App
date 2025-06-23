@@ -495,6 +495,40 @@ console.log("Hidden Songs:", hiddenSongs);
     editorTableBody.appendChild(row);
   });
 }*/
+
+
+function initSortableScaletta() {
+  Sortable.destroy(document.getElementById("scalettaLista")); // prevenire duplicazioni
+
+  new Sortable(document.getElementById("scalettaLista"), {
+    animation: 150,
+    delay: 500,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
+    ghostClass: "sortable-ghost",
+
+    onStart: (evt) => {
+      evt.item.classList.add("drag-started");
+    },
+
+    onEnd: (evt) => {
+      evt.item.classList.remove("drag-started");
+
+      const nuoviBrani = [];
+      const items = document.querySelectorAll("#scalettaLista li:not(.hidden-song)");
+
+      items.forEach(li => {
+        const text = li.textContent.trim().replace(/^\d+\.\s*/, "").replace(/👁️/, "").trim();
+        nuoviBrani.push(text);
+      });
+
+      canzoni = [...nuoviBrani];
+      set(ref(db, "songs"), canzoni);
+      renderEditorTable();
+    }
+  });
+}
+
 //Scaletta Completa
 function renderEditorTable() {
   const scalettaLista = document.getElementById("scalettaLista");
@@ -565,6 +599,7 @@ function renderEditorTable() {
   });
 
   scrollToCurrentSong();
+  initSortableScaletta();
 }
 
 
@@ -844,32 +879,33 @@ downloadExcelBtn.addEventListener("click", async () => {
   URL.revokeObjectURL(url);
 });
 
-
-new Sortable(editableSongList, {
+new Sortable(document.getElementById("scalettaLista"), {
   animation: 150,
   delay: 500,
   delayOnTouchOnly: true,
-
-  onChoose: (evt) => {
-    evt.item.classList.add("drag-ready");
-
-    // Vibrazione su dispositivi che la supportano
-    if (window.navigator.vibrate) {
-      window.navigator.vibrate(50);
-    }
+  touchStartThreshold: 5,
+  ghostClass: "sortable-ghost",
+  onStart: (evt) => {
+    evt.item.classList.add("drag-started");
   },
-
-
-  ghostClass: "drag-ghost",
-
   onEnd: (evt) => {
-    const updated = Array.from(editableSongList.children).map(li => {
-      const raw = li.textContent.trim();
-      return raw.replace(/^\d+\.\s*/, "");
+    evt.item.classList.remove("drag-started");
+
+    // Ricostruisci nuovo array in base al nuovo ordine
+    const nuoviBrani = [];
+    const scalettaItems = document.querySelectorAll("#scalettaLista li");
+
+    scalettaItems.forEach(li => {
+      const text = li.textContent.trim();
+      const cleaned = text.replace(/^\d+\.\s*/, "").replace(/👁️/, "").trim();
+      if (!hiddenSongs.includes(cleaned)) {
+        nuoviBrani.push(cleaned);
+      }
     });
-    canzoni = updated;
-    save();
-    renderEditorList();
+
+    canzoni = [...nuoviBrani];
+    set(ref(db, "songs"), canzoni);
+    renderEditorTable();
   }
 });
 
