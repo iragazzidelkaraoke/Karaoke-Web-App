@@ -514,7 +514,7 @@ function initSortableScaletta() {
   new Sortable(el, {
     animation: 150,
     delay: 500,
-    delayOnTouchOnly: true,
+    //delayOnTouchOnly: true,
     touchStartThreshold: 5,
     ghostClass: "sortable-ghost",
 
