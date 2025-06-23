@@ -508,52 +508,42 @@ function save() {
 
 
 function initSortableScaletta() {
- if (Sortable.active && Sortable.active.el === document.getElementById("scalettaLista")) return;
+  const el = document.getElementById("scalettaLista");
+  if (Sortable.active && Sortable.active.el === el) return;
 
+  new Sortable(el, {
+    animation: 150,
+    delay: 500,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
+    ghostClass: "sortable-ghost",
 
-new Sortable(document.getElementById("scalettaLista"), {
-  animation: 150,
-  delay: 500,
-  delayOnTouchOnly: false,
-  touchStartThreshold: 5,
-  ghostClass: "sortable-ghost",
+    // ⏱️ Dopo delay, pronto per il drag
+    onChoose: (evt) => {
+      evt.item.classList.add("drag-ready");
 
-  filter: ".hidden-song",
-  preventOnFilter: false,
+      // Vibrazione breve per feedback (solo dispositivi che lo supportano)
+      if (navigator.vibrate) navigator.vibrate(50);
+    },
 
-  onStart: (evt) => {
-    if (evt.item.classList.contains("hidden-song")) {
-      evt.preventDefault(); // blocca drag su hidden
-      return false;
+    // 🛑 Rimuove lo stile animato
+    onEnd: (evt) => {
+      evt.item.classList.remove("drag-ready");
+
+      const nuoviBrani = [];
+      document.querySelectorAll("#scalettaLista li:not(.hidden-song)").forEach(li => {
+        const span = li.querySelector("span");
+        if (span) {
+          const testo = span.textContent.replace(/^\d+\.\s*/, "").trim();
+          nuoviBrani.push(testo);
+        }
+      });
+
+      canzoni = [...nuoviBrani];
+      set(ref(db, "songs"), canzoni);
+      renderEditorTable();
     }
-    evt.item.classList.add("drag-started");
-  },
-
-  onMove: function (evt) {
-    // Impedisce che l’elemento venga spostato sopra/sotto i brani nascosti
-    return !evt.related.classList.contains("hidden-song");
-  },
-
-  onEnd: (evt) => {
-    if (evt.item.classList.contains("hidden-song")) return;
-    evt.item.classList.remove("drag-started");
-
-    const nuoviBrani = [];
-    document.querySelectorAll("#scalettaLista li:not(.hidden-song)").forEach(li => {
-      const span = li.querySelector("span");
-      if (span) {
-        const testo = span.textContent.replace(/^\d+\.\s*/, "").trim();
-        nuoviBrani.push(testo);
-      }
-    });
-
-    canzoni = [...nuoviBrani];
-    set(ref(db, "songs"), canzoni);
-    renderEditorTable();
-  }
-});
-
-
+  });
 }
 
 //Scaletta Completa
