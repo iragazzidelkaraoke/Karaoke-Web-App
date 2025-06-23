@@ -200,9 +200,11 @@ const configRef = ref(db, 'config');
 let maxPrenotazioni = 25;
 let prenotazioni = [];
 let canzoni = [];
+let hiddenSongs = []
 let selectedSong = null;
 let editorMode = false;
 let branoCorrente = 0;
+let branoCorrenteInModifica = null;
 let currentUserName = null;
 let bloccaRender = false;
 
@@ -317,8 +319,14 @@ onValue(songsRef, (snapshot) => {
   canzoni = snapshot.exists() ? snapshot.val() : [];
   renderEditorList();
 });
-     
-     
+
+
+onValue(ref(db, "hiddenSongs"), snapshot => {
+  const data = snapshot.val();
+  hiddenSongs = data ? Object.values(data) : [];
+  renderEditorList();
+});
+
 
 
 onValue(reservationsRef, snapshot => {
@@ -404,11 +412,30 @@ function save() {
     canzoni = [...new Set(prenotate.concat(nonPrenotate))];
 
 
+     if (!Array.isArray(hiddenSongs)) hiddenSongs = [];
+
+
     canzoni.forEach((song, index) => {
       const li = document.createElement("li");
       li.innerHTML = `<strong>${index + 1}.</strong> ${song}`;
       editableSongList.appendChild(li);
     });
+
+  
+//console.log("Hidden Songs:", hiddenSongs);
+
+
+
+  hiddenSongs.forEach(song => {
+    const li = document.createElement("li");
+    li.classList.add("hidden-song");
+    li.innerHTML = `<span style="opacity: 0.6;">${song}</span>
+      <button class="btn btn-small show-btn" title="Rendi visibile">👁️</button>`;
+    li.querySelector(".show-btn").onclick = () => {
+      moveToVisible(song);
+    };
+    editableSongList.appendChild(li);
+  });
 
     renderEditorTable();
     updateCurrentSongIndexDisplay();
@@ -517,6 +544,31 @@ function scrollToCurrentSong() {
 }
 
 
+function moveToHidden(song) {
+  const index = canzoni.indexOf(song);
+  if (index !== -1) {
+    canzoni.splice(index, 1);
+    hiddenSongs.push(song);
+
+    set(ref(db, "songs"), canzoni);
+    set(ref(db, "hiddenSongs"), hiddenSongs);
+
+    renderEditorList();
+  }
+}
+
+function moveToVisible(song) {
+  const index = hiddenSongs.indexOf(song);
+  if (index !== -1) {
+    hiddenSongs.splice(index, 1);
+    canzoni.push(song);
+
+    set(ref(db, "songs"), canzoni);
+    set(ref(db, "hiddenSongs"), hiddenSongs);
+
+    renderEditorList();
+  }
+}
 
 
 
@@ -546,6 +598,38 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
   popupCancelReservationBtn.onclick = null;
   popupRemoveSongBtn.onclick = null;
   popupCloseBtn.onclick = null;
+  const toggleVisibilityBtn = document.getElementById("toggleVisibilityBtn");
+  toggleVisibilityBtn.onclick = null;
+
+  const èNascosto = hiddenSongs.some(s => s.trim() === branoCorrente.trim());
+  toggleVisibilityBtn.textContent = èNascosto ? "Rendi visibile" : "Nascondi brano";
+  toggleVisibilityBtn.style.display = "inline-block"; // Assicurati sia visibile
+
+  toggleVisibilityBtn.onclick = async () => {
+  const èNascosto = hiddenSongs.some(s => s.trim() === branoCorrente.trim());
+
+  if (èNascosto) {
+    // Sposta in visibili
+    hiddenSongs = hiddenSongs.filter(s => s.trim() !== branoCorrente.trim());
+    canzoni.push(branoCorrente);
+  } else {
+    canzoni = canzoni.filter(s => s.trim() !== branoCorrente.trim());
+    hiddenSongs.push(branoCorrente);
+  }
+
+  // Aggiorna Firebase correttamente
+  await Promise.all([
+    set(ref(db, "songs"), canzoni),
+    set(ref(db, "hiddenSongs"), hiddenSongs)
+  ]);
+
+  // Aggiorna UI
+  toggleVisibilityBtn.textContent = èNascosto ? "Nascondi brano" : "Rendi visibile";
+  renderEditorList();
+};
+
+
+
 
   // Salva nuovo nome
   popupSaveNameBtn.onclick = () => {
@@ -886,4 +970,12 @@ function updatePostiCounter() {
   el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
 }
 
+});
+
+document.getElementById("searchSetlist").addEventListener("input", function () {
+  const query = this.value.toLowerCase();
+  document.querySelectorAll("#scalettaLista li").forEach(li => {
+    const text = li.textContent.toLowerCase();
+    li.style.display = text.includes(query) ? "flex" : "none";
+  });
 });

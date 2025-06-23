@@ -1135,3 +1135,10 @@ button {
   .modal-content .btn { 
     width: 95%;
   }
+
+  .hidden-song {
+  background-color: #f0f0f0;
+  color: #666;
+  font-style: italic;
+  margin-top: 4px;
+}
