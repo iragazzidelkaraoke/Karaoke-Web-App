@@ -485,6 +485,7 @@ main {
   align-items: center;
   justify-content: center;
   gap: 0.5rem; /* Spazio tra icona e testo */
+  display: inline-flex;
 }
 
 .btn-secondary {
@@ -1105,6 +1106,18 @@ button {
   gap: 0.5rem;
 }
 
+.svg-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.btn.show-btn {
+  margin-left: auto;
+  align-items: center;
+}
+
 .utente-troncato {
   background-color: #bbedff;
   padding: 5px 10px;
@@ -1119,7 +1132,7 @@ button {
   border: 1.5px solid #ccc;
 }
 
-.drag-ready {
+.drag-started {
   transform: scale(1.05);
   background-color: #ffe6f0 !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
@@ -1138,7 +1151,7 @@ button {
   }
 
  li .hidden-song {
-    display: grid;
+    display: flex;
     justify-content: space-around;
     background-color: #f0f0f0;
     color: #666;
@@ -1161,8 +1174,31 @@ button {
   margin-left: 25px;
  }
 
+#toggleVisibilityBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  justify-content: center;
+}
 
-.popup-section #toggleVisibilityBtn {
-  display: flex;
+#toggleVisibilityBtn svg {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: middle;
+}
+
+
+.show-btn {
+  margin-left: auto;
+  padding: 0.3em 0.6em;
   align-items: center;
 }
+
+.hidden-songs-grid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; 
+  gap: 1em;
+}
+
