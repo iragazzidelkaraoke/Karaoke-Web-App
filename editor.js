@@ -511,114 +511,146 @@ function initSortableScaletta() {
  if (Sortable.active && Sortable.active.el === document.getElementById("scalettaLista")) return;
 
 
-  new Sortable(document.getElementById("scalettaLista"), {
-    animation: 150,
-    delay: 500,
-    delayOnTouchOnly: true,
-    touchStartThreshold: 5,
-    ghostClass: "sortable-ghost",
+new Sortable(document.getElementById("scalettaLista"), {
+  animation: 150,
+  delay: 500,
+  delayOnTouchOnly: false,
+  touchStartThreshold: 5,
+  ghostClass: "sortable-ghost",
 
-    filter: ".hidden-song",
-    preventOnFilter: false,
+  filter: ".hidden-song",
+  preventOnFilter: false,
 
-    onStart: (evt) => {
-      evt.item.classList.add("drag-started");
-    },
-
-    onEnd: (evt) => {
-      evt.item.classList.remove("drag-started");
-
-      const nuoviBrani = [];
-      const items = document.querySelectorAll("#scalettaLista li:not(.hidden-song)");
-
-      items.forEach(li => {
-        const text = li.textContent.trim().replace(/^\d+\.\s*/, "").replace(/👁️/, "").trim();
-        nuoviBrani.push(text);
-      });
-
-      canzoni = [...nuoviBrani];
-      set(ref(db, "songs"), canzoni);
-      renderEditorTable();
+  onStart: (evt) => {
+    if (evt.item.classList.contains("hidden-song")) {
+      evt.preventDefault(); // blocca drag su hidden
+      return false;
     }
-  });
+    evt.item.classList.add("drag-started");
+  },
+
+  onMove: function (evt) {
+    // Impedisce che l’elemento venga spostato sopra/sotto i brani nascosti
+    return !evt.related.classList.contains("hidden-song");
+  },
+
+  onEnd: (evt) => {
+    if (evt.item.classList.contains("hidden-song")) return;
+    evt.item.classList.remove("drag-started");
+
+    const nuoviBrani = [];
+    document.querySelectorAll("#scalettaLista li:not(.hidden-song)").forEach(li => {
+      const span = li.querySelector("span");
+      if (span) {
+        const testo = span.textContent.replace(/^\d+\.\s*/, "").trim();
+        nuoviBrani.push(testo);
+      }
+    });
+
+    canzoni = [...nuoviBrani];
+    set(ref(db, "songs"), canzoni);
+    renderEditorTable();
+  }
+});
+
+
 }
 
 //Scaletta Completa
 function renderEditorTable() {
   const scalettaLista = document.getElementById("scalettaLista");
-  if (!scalettaLista) return;
-  scalettaLista.innerHTML = "";
+  const nascostiContainer = document.getElementById("nascostiContainer");
+  const scalettaNascosta = document.getElementById("scalettaNascosta");
 
+  if (!scalettaLista || !scalettaNascosta) return;
+
+  scalettaLista.innerHTML = "";
+  scalettaNascosta.innerHTML = "";
+
+  // 🔁 Se siamo in modalità "mostra solo nascosti"
   if (mostraSoloNascosti) {
-    // ➜ Mostra solo hiddenSongs con stile diverso
+    nascostiContainer.classList.remove("hidden");
+
     hiddenSongs.forEach(song => {
       const li = document.createElement("li");
       li.classList.add("hidden-song");
+
       li.innerHTML = `
         <div class="hidden-songs-grid">
           <span style="opacity: 0.6; font-style: italic;">${song}</span>
-          <button class="btn btn-small show-btn" title="Rendi visibile"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    stroke-width="1.5" stroke="currentColor" class="size-6">
-    <path stroke-linecap="round" stroke-linejoin="round"
-      d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-  </svg></button>
+          <button class="btn btn-small show-btn" title="Rendi visibile">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5
+                c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0
+                8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228
+                3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243
+                m4.242 4.242L9.88 9.88"/>
+            </svg>
+          </button>
         </div>
       `;
-      li.querySelector(".show-btn").onclick = () => {
-        moveToVisible(song);
-      };
+      li.querySelector(".show-btn").onclick = () => moveToVisible(song);
+      scalettaNascosta.appendChild(li);
+    });
+
+    // Nascondi la lista ordinabile principale
+    scalettaLista.classList.add("hidden");
+  } else {
+    // ➜ Mostra lista normale
+    nascostiContainer.classList.add("hidden");
+    scalettaLista.classList.remove("hidden");
+
+    canzoni.forEach((song, index) => {
+      const li = document.createElement("li");
+
+      const pren = prenotazioni.find(p => p.song === song);
+      const fullName = pren ? pren.name : "";
+
+      let displayName = fullName;
+      if (fullName && fullName.trim().includes(" ")) {
+        displayName = fullName.trim().split(" ")[0] + "…";
+      }
+
+      li.innerHTML = `
+        <div class="svg-edit" style="display:flex;flex-direction:column;">
+          <span><strong>${index + 1}.</strong>
+            <svg class="w-6 h-6 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg"
+              width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 16.5c0 1.3807-1.1193 2.5-2.5 2.5C8.11929 19 7 17.8807 7 16.5S8.11929 14 9.5 14c1.3807 0 2.5 1.1193 2.5 2.5Zm0 0V5c2.5 0 6 2.5 4.5 7"/>
+            </svg>
+            ${song}
+          </span>
+          ${fullName ? `<span class="utente-troncato">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0
+                3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1
+                12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+            </svg> ${displayName}
+          </span>` : ""}
+        </div>
+      `;
+
+      if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
+      else if (index < branoCorrente - 1) li.classList.add("suonati");
+
+      li.addEventListener("click", () => {
+        apriMenuModifica(index, song, fullName || null);
+      });
+
       scalettaLista.appendChild(li);
     });
-    return;
+
+    initSortableScaletta();
   }
 
-  // ➜ Brani normali visibili
-  canzoni.forEach((song, index) => {
-    const li = document.createElement("li");
-
-    const pren = prenotazioni.find(p => p.song === song);
-    const fullName = pren ? pren.name : "";
-
-    let displayName = fullName;
-    if (fullName && fullName.trim().includes(" ")) {
-      displayName = fullName.trim().split(" ")[0] + "…";
-    }
-
-    li.innerHTML = `
-      <div class="svg-edit" style="display:flex;flex-direction:column;">
-        <span><strong>${index + 1}.</strong>
-          <svg class="w-6 h-6 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg"
-            width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 16.5c0 1.3807-1.1193 2.5-2.5 2.5C8.11929 19 7 17.8807 7 16.5S8.11929 14 9.5 14c1.3807 0 2.5 1.1193 2.5 2.5Zm0 0V5c2.5 0 6 2.5 4.5 7"/>
-          </svg>
-          ${song}
-        </span>
-        ${fullName ? `<span class="utente-troncato">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0
-              3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1
-              12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
-          </svg> ${displayName}
-        </span>` : ""}
-      </div>
-    `;
-
-    if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
-    else if (index < branoCorrente - 1) li.classList.add("suonati");
-
-    li.addEventListener("click", () => {
-      apriMenuModifica(index, song, fullName || null);
-    });
-
-    scalettaLista.appendChild(li);
-  });
-
   scrollToCurrentSong();
-  initSortableScaletta();
 }
+
 
 
 
