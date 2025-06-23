@@ -950,6 +950,7 @@ button {
 .icons-title svg {
   width: 24px;
   height: 24px;
+  display: grid;
   
 }
 
@@ -1136,9 +1137,32 @@ button {
     width: 95%;
   }
 
-  .hidden-song {
-  background-color: #f0f0f0;
-  color: #666;
-  font-style: italic;
-  margin-top: 4px;
+ li .hidden-song {
+    display: grid;
+    justify-content: space-around;
+    background-color: #f0f0f0;
+    color: #666;
+    font-style: italic;
+    margin-top: 4px;
+    
+}
+
+  .hidden-song span {
+    left: 0;
+  }
+
+ .hidden-song button {
+  background-color: #bbbbbb;
+  padding: 5px 10px;
+  border-radius: 15px;
+  border: 1px solid #7f7f80;
+  width: fit-content;
+  margin-top: 10px;
+  margin-left: 25px;
+ }
+
+
+.popup-section #toggleVisibilityBtn {
+  display: flex;
+  align-items: center;
 }
