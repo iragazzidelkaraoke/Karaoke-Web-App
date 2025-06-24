@@ -9,73 +9,51 @@
   <link rel="icon" type="img" href="img/HeadLogo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
-    
-    <!--<script type="module" src="script.js"></script>-->
-   
-
-    
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <!--<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>-->
   <script type="module" src="editor.js"></script>
-
   <script type="module" src="./presenza.js"></script>
- 
-
 </head>
-
-
-
-
-
-
-
-
 <body style="overflow: hidden;">
 
-
-
   <div id="passwordModal" class="modalPW" >
-  <div class="modal-content" tabindex="-1">
-    <h2>Accesso Editor</h2>
-    <input type="password" id="passwordInput" placeholder="Inserisci password..." autofocus/>
-    <button id="submitPassword">Entra</button>
+    <div class="modal-content" tabindex="-1">
+      <h2>Accesso Editor</h2>
+      <input type="password" id="passwordInput" placeholder="Inserisci password..." autofocus/>
+      <button id="submitPassword">Entra</button>
+    </div>
   </div>
-</div>
-   <header class="glass-header">
-     <div class="centerLogo" > <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
-   </header>
 
+  <header class="glass-header">
+     <div class="centerLogo">
+      <a href="index.html"><img src="img/scrittalogo.PNG" alt="logo I Ragazzi" id="logoEdit"></a>   </div>  
+  </header>
 
- <div class="branoAttualeSection">
-  <label for="currentSongInput" style="padding: .5rem 0;">Brano attuale:</label>
+  <div class="branoAttualeSection">
+    <label for="currentSongInput" style="padding: .5rem 0;">Brano attuale:</label>
     <button id="prevSongBtn" class="btn btn-secondary"><svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="currentColor" class="bi bi-skip-start" viewBox="0 0 16 16">
-  <path d="M4 4a.5.5 0 0 1 1 0v3.248l6.267-3.636c.52-.302 1.233.043 1.233.696v7.384c0 .653-.713.998-1.233.696L5 8.752V12a.5.5 0 0 1-1 0zm7.5.633L5.696 8l5.804 3.367z"/>
-</svg></button>
-  <input type="number" id="currentSongInput" min="0" value="0" style="width: 2rem;" />
+    <path d="M4 4a.5.5 0 0 1 1 0v3.248l6.267-3.636c.52-.302 1.233.043 1.233.696v7.384c0 .653-.713.998-1.233.696L5 8.752V12a.5.5 0 0 1-1 0zm7.5.633L5.696 8l5.804 3.367z"/></svg></button>
+    <input type="number" id="currentSongInput" min="0" value="0" style="width: 2rem;" />
+    <button id="nextSongBtn" class="btn"><svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="currentColor" class="bi bi-skip-end" viewBox="0 0 16 16">
+    <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z"/></svg></button>
+  </div>
 
-  <button id="nextSongBtn" class="btn"><svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="currentColor" class="bi bi-skip-end" viewBox="0 0 16 16">
-  <path d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.713 3.31 4 3.655 4 4.308v7.384c0 .653.713.998 1.233.696L11.5 8.752V12a.5.5 0 0 0 1 0zM5 4.633 10.804 8 5 11.367z"/>
-</svg></button>
-</div>
-
-<div style="position: fixed; top: 35px; right: 1rem; background: #111; color: white; padding: 6px 12px; font-size: 0.9rem; border-radius: 10px; z-index: 999;">
-  👥: <span id="online-counter">0</span>
-</div>
+  <div style="position: fixed; top: 35px; right: 1rem; background: #111; color: white; padding: 6px 12px; font-size: 0.9rem; border-radius: 10px; z-index: 999;">
+    👥: <span id="online-counter">0</span>
+  </div>
 
 
   <main class="editor-main">    
 <!-- MODAL DI ALERT -->
-<div id="customAlertModal" class="modal hidden">
-  <div class="modal-content">
-    <button class="popup-close close-alert">×</button>
-    <div id="customAlertMessage"></div>
-    
-      <button class="btn close-alert">OK</button>
-
+  <div id="customAlertModal" class="modal hidden">
+    <div class="modal-content">
+      <button class="popup-close close-alert">×</button>
+      <div id="customAlertMessage"></div>
+        <button class="btn close-alert">OK</button>
+    </div>
   </div>
-</div>
 
 <!-- MODAL DI CONFERMA -->
 <div id="customConfirmModal" class="modal hidden">
@@ -256,7 +234,7 @@ Salva Modifiche</button>
  
   </div> 
 
-<section class="reveal-editableTable hidden">
+<!--<section class="reveal-editableTable hidden">
 
    <h3>Scaletta Editabile</h3>
     <button class="btn visible actions" id="revealEditBtn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
@@ -275,7 +253,7 @@ Salva Modifiche</button>
   <tbody></tbody>
   </table>
    </div>
-</section> 
+</section> -->
      
   </main>
 
@@ -290,7 +268,7 @@ Salva Modifiche</button>
  
 
    
-window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("passwordModal");
   const input = document.getElementById("passwordInput");
   const submit = document.getElementById("submitPassword");

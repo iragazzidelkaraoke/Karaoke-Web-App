@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
  
   const newSongInput = document.getElementById("newSongInput");
   //const addSongBtn = document.getElementById("addSongBtn");
-  const editableSongList = document.getElementById("editableSongList");
+  //const editableSongList = document.getElementById("editableSongList");
   const resetBtn = document.getElementById("resetBtn");
   const downloadExcelBtn = document.getElementById("downloadCSVBtn");
 
@@ -303,14 +303,14 @@ confirmAddSongBtn.addEventListener("click", () => {
 if (!duplicato) {
   canzoni.push(nuovoBrano);
   save();
-  renderEditorList();
+  renderEditorTable();
 }
 
 
   if (!canzoni.includes(nuovoBrano)) {
     canzoni.push(nuovoBrano);
     save(); // Salva dove necessario (Firebase o locale)
-    renderEditorList?.(); // Se hai una funzione per aggiornare la lista
+    renderEditorTable?.(); // Se hai una funzione per aggiornare la lista
   }
 
   addSongModal.classList.add("hidden");
@@ -319,7 +319,7 @@ if (!duplicato) {
 
 toggleHiddenBtn.addEventListener("click", () => {
   mostraSoloNascosti = !mostraSoloNascosti;
-  renderEditorList();
+  renderEditorTable();
 
   toggleHiddenBtn.innerHTML = mostraSoloNascosti
     ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -348,14 +348,14 @@ toggleHiddenBtn.addEventListener("click", () => {
 
 onValue(songsRef, (snapshot) => {
   canzoni = snapshot.exists() ? snapshot.val() : [];
-  renderEditorList();
+  renderEditorTable();
 });
 
 
 onValue(ref(db, "hiddenSongs"), snapshot => {
   const data = snapshot.val();
   hiddenSongs = data ? Object.values(data) : [];
-  renderEditorList();
+  renderEditorTable();
 });
 
 
@@ -374,7 +374,7 @@ onValue(reservationsRef, snapshot => {
     });
   }
 
-  renderEditorList();   // ✅ aggiorna la tabella
+  renderEditorTable();   // ✅ aggiorna la tabella
   updateWaitingMsg();
   updatePostiCounter();
 });
@@ -391,7 +391,7 @@ onValue(reservationsRef, snapshot => {
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
     updatePostiCounter();
-    renderEditorList();
+    renderEditorTable();
     scrollToCurrentSong();
   }
 });
@@ -433,7 +433,7 @@ function save() {
 
 
 
-  function renderEditorList() {
+  function renderEditorTable() {
     editableSongList.innerHTML = "";
 
     // Ordina le canzoni: prenotate prima, non prenotate dopo
@@ -448,7 +448,7 @@ function save() {
 
     canzoni.forEach((song, index) => {
       const li = document.createElement("li");
-      li.draggable = true;
+    //  li.draggable = true;
       li.innerHTML = `<strong>${index + 1}.</strong> ${song}`;
       editableSongList.appendChild(li);
     });
@@ -472,81 +472,6 @@ function save() {
     renderEditorTable();
     updateCurrentSongIndexDisplay();
   }
-
-/*function renderEditorTable() {
-  editorTableBody.innerHTML = "";
-  canzoni.forEach((song, index) => {
-    const row = document.createElement('tr');
-
-    const indexCell = document.createElement("td");
-    indexCell.textContent = index + 1;
-
-    const songCell = document.createElement("td");
-    songCell.textContent = song;
-
-    const userCell = document.createElement("td");
-    const user = prenotazioni.find(p => p.song === song);
-    userCell.textContent = user ? user.name : "";
-
-    const actionCell = document.createElement("td");
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "☰";
-    editBtn.classList.add("btn", "btn-secondary");
-    editBtn.style.padding = "2px 8px";
-    editBtn.addEventListener("click", () => {
-      apriMenuModifica(index, song, user ? user.name : null);
-    });
-    actionCell.appendChild(editBtn);
-
-    row.appendChild(indexCell);
-    row.appendChild(songCell);
-    row.appendChild(userCell);
-    row.appendChild(actionCell);
-
-    editorTableBody.appendChild(row);
-  });
-}*/
-
-
-function initSortableScaletta() {
-  const el = document.getElementById("scalettaLista");
-
-  new Sortable(el, {
-    animation: 150,
-    delay: 500,
-    delayOnTouchOnly: true,
-    fallbackTolerance: 5,
-    touchStartThreshold: 5,
-    fallbackOnBody: true,
-    forceFallback: true,
-    ghostClass: "sortable-ghost",
-    onChoose: (evt) => {
-      evt.item.classList.add("drag-ready");
-      evt.item.style.touchAction = "none";
-      if (navigator.vibrate) navigator.vibrate(50);
-    },
-    onStart(evt) {
-      console.log("Drag started", evt);
-    },
-    onEnd: (evt) => {
-      evt.item.classList.remove("drag-ready");
-      evt.item.style.touchAction = "";
-
-      const nuoviBrani = [];
-      document.querySelectorAll("#scalettaLista li:not(.hidden-song)").forEach(li => {
-        const span = li.querySelector("span");
-        if (span) {
-          const testo = span.textContent.replace(/^\d+\.\s*/, "").trim();
-          nuoviBrani.push(testo);
-        }
-      });
-
-      canzoni = [...nuoviBrani];
-      set(ref(db, "songs"), canzoni);
-      renderEditorTable();
-    }
-  });
-}
 
 
 //Scaletta Completa
@@ -638,7 +563,7 @@ function renderEditorTable() {
       scalettaLista.appendChild(li);
     });
 
-    initSortableScaletta();
+    //initSortableScaletta();
   }
 
   scrollToCurrentSong();
@@ -679,7 +604,7 @@ function moveToHidden(song) {
     set(ref(db, "songs"), canzoni);
     set(ref(db, "hiddenSongs"), hiddenSongs);
 
-    renderEditorList();
+    renderEditorTable();
   }
 }
 
@@ -692,7 +617,7 @@ function moveToVisible(song) {
     set(ref(db, "songs"), canzoni);
     set(ref(db, "hiddenSongs"), hiddenSongs);
 
-    renderEditorList();
+    renderEditorTable();
   }
 }
 
@@ -767,7 +692,7 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
 </svg>
  <span>Rendi visibile</span>`;
-  renderEditorList();
+  renderEditorTable();
 };
 
 
@@ -786,7 +711,7 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
       }
 
       save();
-      renderEditorList();
+      renderEditorTable();
     }
     popup.classList.add("hidden");
   };
@@ -803,7 +728,7 @@ popupCancelReservationBtn.onclick = () => {
         // Rimuove dall'array locale
         prenotazioni = prenotazioni.filter(p => p.id !== prenotazioneDaAnnullare.id);
         // Aggiorna la tabella editor
-        renderEditorList();
+        renderEditorTable();
       })
       .catch(error => {
         console.error("Errore durante la rimozione della prenotazione:", error);
@@ -824,7 +749,7 @@ popupCancelReservationBtn.onclick = () => {
     }
     canzoni.splice(index, 1);
     save();
-    renderEditorList();
+    renderEditorTable();
     popup.classList.add("hidden");
   };
 
@@ -938,35 +863,7 @@ downloadExcelBtn.addEventListener("click", async () => {
   URL.revokeObjectURL(url);
 });
 
-new Sortable(document.getElementById("scalettaLista"), {
-  animation: 150,
-  delay: 500,                   // Delay in ms
-  delayOnTouchOnly: false,     // ⬅️ set to false per applicarlo SEMPRE
-  touchStartThreshold: 5,
-  forceFallback: true,
-  ghostClass: "drag-ghost",
-  onStart: (evt) => {
-    evt.item.classList.add("drag-started");
-  },
-  onEnd: (evt) => {
-    evt.item.classList.remove("drag-started");
 
-    const nuoviBrani = [];
-    document.querySelectorAll("#scalettaLista li").forEach(li => {
-      if (!li.classList.contains("hidden-song")) {
-        const span = li.querySelector("span");
-        if (span) {
-          const testo = span.textContent.replace(/^\d+\.\s*/, "").trim();
-          nuoviBrani.push(testo);
-        }
-      }
-    });
-
-    canzoni = [...nuoviBrani];
-    set(ref(db, "songs"), canzoni);
-    renderEditorTable();
-  }
-});
 
 
 
@@ -1087,18 +984,7 @@ function updateWaitingMsg() {
   };
 }
 
-  revealBtn.addEventListener("click", () => {
-      editableTable.classList.remove("hidden");
-      hideBtn.classList.remove("hidden");
-      revealBtn.classList.add("hidden");
-    });
 
-    hideBtn.addEventListener("click", () => {
-      editableTable.classList.add("hidden");
-      hideBtn.classList.add("hidden");
-      revealBtn.classList.remove("hidden");
-    });
-  
 
 
   
