@@ -703,7 +703,7 @@ function apriMenuModifica(index, branoCorrente, utenteCorrente) {
 </svg>
  <span>Nascondi brano</span>`;
 
-  toggleVisibilityBtn.style.display = "inline-block"; // Assicurati sia visibile
+  toggleVisibilityBtn.style.display = "inline-flex"; // Assicurati sia visibile
 
   toggleVisibilityBtn.onclick = async () => {
   const èNascosto = hiddenSongs.some(s => s.trim() === branoCorrente.trim());
