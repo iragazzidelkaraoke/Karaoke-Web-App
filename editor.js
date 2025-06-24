@@ -7,6 +7,9 @@ import { getDatabase, ref, set, get, onValue, remove, update} from "https://www.
 
 import { database, goOffline, goOnline } from './firebase.js';
 
+
+
+
 let inactivityTimer;
 let isConnected = true;
 
@@ -219,48 +222,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   //implemento di firebase
-
-  
-  
-
-
-
-
   const loginEditor = document.getElementById("cogEditor");
-
-  //const reservationForm = document.getElementById("reservationForm");
   const songSection = document.getElementById("songSection");
-  
-  //const cancelReservation = document.getElementById("cancelReservation");
   const infoSection = document.getElementById("infoSection");
   const frontSign = document.getElementById("prenotaLaTuaCanzone");
-  //const maxReached = document.getElementById("maxReached");
-
   const waitingSection = document.getElementById("waitingSection");
   const waitingMsg = document.getElementById("waitingMsg");
   const cancelSlotBtn = document.getElementById("cancelSlotBtn");
-
- 
   const newSongInput = document.getElementById("newSongInput");
-  //const addSongBtn = document.getElementById("addSongBtn");
-  //const editableSongList = document.getElementById("editableSongList");
   const resetBtn = document.getElementById("resetBtn");
   const downloadExcelBtn = document.getElementById("downloadCSVBtn");
-
   const currentSongInput = document.getElementById("currentSongInput");
   const nextSongBtn = document.getElementById("nextSongBtn");
   const prevSongBtn = document.getElementById("prevSongBtn");
   const annullaLimiteInput = document.getElementById("annullaLimite");
   const maxPrenotazioniInput = document.getElementById("maxPrenotazioniInput");
-  const editorTableBody = document.querySelector("#editorTable tbody");
-  const revealBtn = document.getElementById("revealEditBtn");
-  const hideBtn = document.getElementById("hideEditBtn");
-  const editableTable = document.getElementById("editableTableReveal");
-  
-
-  //cost search and filter bar
   const searchBar = document.getElementById("filterBars");
-
   const toggleHiddenBtn = document.getElementById("toggleHiddenBtn");
 
 
@@ -433,45 +410,57 @@ function save() {
 
 
 
-  function renderEditorTable() {
-    editableSongList.innerHTML = "";
+function renderEditorTable() {
+  const scalettaLista = document.getElementById("scalettaLista");
+  const nascostiContainer = document.getElementById("nascostiContainer");
+  const scalettaNascosta = document.getElementById("scalettaNascosta");
 
-    // Ordina le canzoni: prenotate prima, non prenotate dopo
-    const prenotate = prenotazioni.map(p => p.song);
-    const nonPrenotate = canzoni.filter(song => !prenotate.includes(song));
-    //canzoni = prenotate.concat(nonPrenotate).filter((v, i, a) => a.indexOf(v) === i);
-    canzoni = [...new Set(prenotate.concat(nonPrenotate))];
+  if (!scalettaLista || !scalettaNascosta) return;
 
+  scalettaLista.innerHTML = "";
+  scalettaNascosta.innerHTML = "";
 
-     if (!Array.isArray(hiddenSongs)) hiddenSongs = [];
+  const prenotate = prenotazioni.map(p => p.song);
+  const nonPrenotate = canzoni.filter(song => !prenotate.includes(song));
+  canzoni = [...new Set(prenotate.concat(nonPrenotate))];
 
+  if (!Array.isArray(hiddenSongs)) hiddenSongs = [];
+
+  if (mostraSoloNascosti) {
+    nascostiContainer.classList.remove("hidden");
+
+    hiddenSongs.forEach(song => {
+      const li = document.createElement("li");
+      li.classList.add("hidden-song");
+      li.innerHTML = `<span style="opacity: 0.6;">${song}</span>
+        <button class="btn btn-small show-btn" title="Rendi visibile">👁️</button>`;
+      li.querySelector(".show-btn").onclick = () => moveToVisible(song);
+      scalettaNascosta.appendChild(li);
+    });
+
+    scalettaLista.classList.add("hidden");
+  } else {
+    nascostiContainer.classList.add("hidden");
+    scalettaLista.classList.remove("hidden");
 
     canzoni.forEach((song, index) => {
       const li = document.createElement("li");
-    //  li.draggable = true;
-      li.innerHTML = `<strong>${index + 1}.</strong> ${song}`;
-      editableSongList.appendChild(li);
+      li.setAttribute("data-song", song);
+
+      const pren = prenotazioni.find(p => p.song === song);
+      const fullName = pren ? pren.name : "";
+
+      li.innerHTML = `<strong>${index + 1}.</strong> ${song}${
+        fullName ? ` <span style="opacity:0.7;font-size:0.85em;">(${fullName})</span>` : ""
+      }`;
+
+      scalettaLista.appendChild(li);
     });
-
-  
-//console.log("Hidden Songs:", hiddenSongs);
-
-
-
-  hiddenSongs.forEach(song => {
-    const li = document.createElement("li");
-    li.classList.add("hidden-song");
-    li.innerHTML = `<span style="opacity: 0.6;">${song}</span>
-      <button class="btn btn-small show-btn" title="Rendi visibile">👁️</button>`;
-    li.querySelector(".show-btn").onclick = () => {
-      moveToVisible(song);
-    };
-    editableSongList.appendChild(li);
-  });
-
-    renderEditorTable();
-    updateCurrentSongIndexDisplay();
   }
+
+  initScalettaDrag();
+  updateCurrentSongIndexDisplay();
+}
 
 
 //Scaletta Completa
@@ -1008,3 +997,50 @@ document.getElementById("searchSetlist").addEventListener("input", function () {
     li.style.display = text.includes(query) ? "flex" : "none";
   });
 });
+
+// DRAG & DROP SCORRETTO PER BRANI PRENOTATI
+
+function initScalettaDrag() {
+  const el = document.getElementById("scalettaLista");
+  if (!el) return;
+
+  new Sortable(el, {
+    animation: 150,
+    delay: 500,
+    delayOnTouchOnly: true,
+    fallbackTolerance: 5,
+    fallbackOnBody: true,
+    touchStartThreshold: 5,
+    forceFallback: true,
+    ghostClass: "sortable-ghost",
+
+    onEnd: (evt) => {
+      const fromIndex = evt.oldIndex;
+      const toIndex = evt.newIndex;
+
+      if (fromIndex === toIndex) return;
+
+      const songMoved = canzoni[fromIndex];
+      const isPrenotato = prenotazioni.some(p => p.song === songMoved);
+
+      const moveSong = () => {
+        const updated = [...canzoni];
+        updated.splice(fromIndex, 1);
+        updated.splice(toIndex, 0, songMoved);
+        canzoni = updated;
+
+        set(ref(db, "songs"), canzoni);
+        renderEditorTable();
+      };
+
+      if (isPrenotato) {
+        showCustomConfirm(
+          `Il brano "<strong>${songMoved}</strong>" è prenotato.<br>Sei sicuro di volerlo spostare?`,
+          moveSong
+        );
+      } else {
+        moveSong();
+      }
+    }
+  });
+}

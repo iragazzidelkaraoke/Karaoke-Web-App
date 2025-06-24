@@ -1207,3 +1207,9 @@ button {
   transition: transform 0.2s ease;
   z-index: 10;
 }
+
+.caricamento-scaletta{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
