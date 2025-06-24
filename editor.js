@@ -514,7 +514,7 @@ function initSortableScaletta() {
   new Sortable(el, {
     animation: 150,
     delay: 500,
-    //delayOnTouchOnly: true,
+    delayOnTouchOnly: true,
     touchStartThreshold: 5,
     ghostClass: "sortable-ghost",
 
@@ -522,13 +522,19 @@ function initSortableScaletta() {
     onChoose: (evt) => {
       evt.item.classList.add("drag-ready");
 
+      // ⚠️ Impedisce lo scroll durante il drag (solo temporaneamente)
+      evt.item.style.touchAction = "none";
+
       // Vibrazione breve per feedback (solo dispositivi che lo supportano)
       if (navigator.vibrate) navigator.vibrate(50);
     },
 
-    // 🛑 Rimuove lo stile animato
+    // 🛑 Rimuove lo stile animato e ripristina il touch
     onEnd: (evt) => {
       evt.item.classList.remove("drag-ready");
+
+      // ✅ Ripristina il comportamento touch normale
+      evt.item.style.touchAction = "";
 
       const nuoviBrani = [];
       document.querySelectorAll("#scalettaLista li:not(.hidden-song)").forEach(li => {
