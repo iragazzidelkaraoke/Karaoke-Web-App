@@ -525,7 +525,7 @@ function initSortableScaletta() {
       if (navigator.vibrate) navigator.vibrate(50);
     },
     onStart(evt) {
-      console.log("🎯 Drag started", evt);
+      console.log("Drag started", evt);
     },
     onEnd: (evt) => {
       evt.item.classList.remove("drag-ready");
