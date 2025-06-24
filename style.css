@@ -441,6 +441,7 @@ main {
   text-align: left;
   justify-content: left;
   gap: .5rem;
+  touch-action: none;
 
 }
 

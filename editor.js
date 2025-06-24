@@ -448,6 +448,7 @@ function save() {
 
     canzoni.forEach((song, index) => {
       const li = document.createElement("li");
+      li.draggable = true;
       li.innerHTML = `<strong>${index + 1}.</strong> ${song}`;
       editableSongList.appendChild(li);
     });
@@ -942,6 +943,7 @@ new Sortable(document.getElementById("scalettaLista"), {
   delay: 500,                   // Delay in ms
   delayOnTouchOnly: false,     // ⬅️ set to false per applicarlo SEMPRE
   touchStartThreshold: 5,
+  forceFallback: true,
   ghostClass: "drag-ghost",
   onStart: (evt) => {
     evt.item.classList.add("drag-started");
