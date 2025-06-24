@@ -1138,7 +1138,7 @@ button {
 
 .drag-ghost {
   opacity: 0.5;
-  background-color: transparent;
+  background-color: black;
 }
 
 
@@ -1202,10 +1202,11 @@ button {
 
 .sortable-chosen {
   transform: scale(1.05);
-  background-color: #fcafce;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease;
   z-index: 10;
+  border-radius: 8px;
+  display: flex;
+  justify-content: left;
 }
 
 .caricamento-scaletta{
@@ -1213,3 +1214,4 @@ button {
   display: flex;
   justify-content: center;
 }
+

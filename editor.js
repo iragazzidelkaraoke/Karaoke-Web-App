@@ -111,7 +111,7 @@ document.addEventListener("keydown", handleEnterAlert);
   });
 }
 
-function showCustomConfirm(message, onConfirm) {
+function showCustomConfirm(message, onConfirm, onCancel = () => {}) {
   const modal = document.getElementById("customConfirmModal");
   const msgBox = document.getElementById("customConfirmMessage");
   const yesBtn = document.getElementById("confirmYesBtn");
@@ -125,22 +125,31 @@ function showCustomConfirm(message, onConfirm) {
       modal.classList.add("hidden");
       if (typeof onConfirm === "function") onConfirm();
       document.removeEventListener("keydown", handleEnterConfirm);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      modal.classList.add("hidden");
+      if (typeof onCancel === "function") onCancel();
+      document.removeEventListener("keydown", handleEnterConfirm);
     }
   }
-document.addEventListener("keydown", handleEnterConfirm);
 
+  document.addEventListener("keydown", handleEnterConfirm);
 
   document.querySelectorAll(".close-confirm").forEach(btn => {
     btn.onclick = () => {
       modal.classList.add("hidden");
+      if (typeof onCancel === "function") onCancel();
+      document.removeEventListener("keydown", handleEnterConfirm);
     };
   });
 
   yesBtn.onclick = () => {
     modal.classList.add("hidden");
     if (typeof onConfirm === "function") onConfirm();
+    document.removeEventListener("keydown", handleEnterConfirm);
   };
 }
+
 
 function generaTokenCasuale() {
   
@@ -405,62 +414,98 @@ function save() {
 
 
 
+// DRAG & DROP SCORRETTO PER BRANI PRENOTATI
 
+let sortableInstance;
 
-
-
-
-function renderEditorTable() {
-  const scalettaLista = document.getElementById("scalettaLista");
-  const nascostiContainer = document.getElementById("nascostiContainer");
-  const scalettaNascosta = document.getElementById("scalettaNascosta");
-
-  if (!scalettaLista || !scalettaNascosta) return;
-
-  scalettaLista.innerHTML = "";
-  scalettaNascosta.innerHTML = "";
-
-  const prenotate = prenotazioni.map(p => p.song);
-  const nonPrenotate = canzoni.filter(song => !prenotate.includes(song));
-  canzoni = [...new Set(prenotate.concat(nonPrenotate))];
-
-  if (!Array.isArray(hiddenSongs)) hiddenSongs = [];
-
-  if (mostraSoloNascosti) {
-    nascostiContainer.classList.remove("hidden");
-
-    hiddenSongs.forEach(song => {
-      const li = document.createElement("li");
-      li.classList.add("hidden-song");
-      li.innerHTML = `<span style="opacity: 0.6;">${song}</span>
-        <button class="btn btn-small show-btn" title="Rendi visibile">👁️</button>`;
-      li.querySelector(".show-btn").onclick = () => moveToVisible(song);
-      scalettaNascosta.appendChild(li);
-    });
-
-    scalettaLista.classList.add("hidden");
-  } else {
-    nascostiContainer.classList.add("hidden");
-    scalettaLista.classList.remove("hidden");
-
-    canzoni.forEach((song, index) => {
-      const li = document.createElement("li");
-      li.setAttribute("data-song", song);
-
-      const pren = prenotazioni.find(p => p.song === song);
-      const fullName = pren ? pren.name : "";
-
-      li.innerHTML = `<strong>${index + 1}.</strong> ${song}${
-        fullName ? ` <span style="opacity:0.7;font-size:0.85em;">(${fullName})</span>` : ""
-      }`;
-
-      scalettaLista.appendChild(li);
-    });
+function initScalettaDrag() {
+  const el = document.getElementById("scalettaLista");
+  if (!el) {
+    console.warn("⚠️ Elemento scalettaLista non trovato");
+    return;
   }
 
-  initScalettaDrag();
-  updateCurrentSongIndexDisplay();
+  console.log("✅ Inizializzo SortableJS");
+
+  if (window.sortableInstance) {
+    window.sortableInstance.destroy();
+  }
+
+  window.sortableInstance = new Sortable(el, {
+    animation: 150,
+    delay: 500,
+    delayOnTouchOnly: false,
+    fallbackTolerance: 5,
+    fallbackOnBody: true,
+    touchStartThreshold: 5,
+    forceFallback: true,
+    ghostClass: "drag-ghost",
+    chosenClass: "sortable-chosen",
+
+   onEnd: (evt) => {
+  const fromIndex = evt.oldIndex;
+  const toIndex = evt.newIndex;
+
+  if (fromIndex === toIndex) return;
+
+  const songMoved = canzoni[fromIndex];
+  const isPrenotato = prenotazioni.some(p => p.song === songMoved);
+
+  const moveSong = () => {
+    // 🔁 Aggiorna array canzoni
+    const updated = [...canzoni];
+    updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, songMoved);
+    canzoni = updated;
+
+    // ✅ Salva nuova lista su Firebase
+    set(ref(db, "songs"), canzoni);
+
+    // ✅ Se il brano è prenotato, aggiorna posizione in reservations[]
+    const reservationIndex = prenotazioni.findIndex(p => p.song === songMoved);
+    if (reservationIndex !== -1) {
+      const updatedReservations = [...prenotazioni];
+      const [resMoved] = updatedReservations.splice(reservationIndex, 1);
+
+      // Calcolo nuova posizione relativa tra prenotati
+      const prenSongs = updated.filter(song =>
+        updatedReservations.some(p => p.song === song)
+      );
+
+      // Trova dove inserirlo nella nuova posizione prenotata
+      let newResIndex = 0;
+      for (let i = 0; i < updated.length; i++) {
+        if (updated[i] === songMoved) break;
+        if (updatedReservations.find(p => p.song === updated[i])) {
+          newResIndex++;
+        }
+      }
+
+      updatedReservations.splice(newResIndex, 0, resMoved);
+
+      // 🔁 Salva reservations aggiornate su Firebase
+      set(ref(db, "reservations"), updatedReservations);
+      prenotazioni = updatedReservations; // aggiorna lo stato locale
+    }
+
+    // 🔁 Re-render della scaletta aggiornata
+    renderEditorTable();
+  };
+
+  if (isPrenotato) {
+    showCustomConfirm(
+      `Il brano "<strong>${songMoved}</strong>" è prenotato.<br>Sei sicuro di volerlo spostare?`,
+      moveSong,
+      () => renderEditorTable()
+    );
+  } else {
+    moveSong();
+  }
 }
+
+  });
+}
+
 
 
 //Scaletta Completa
@@ -474,7 +519,7 @@ function renderEditorTable() {
   scalettaLista.innerHTML = "";
   scalettaNascosta.innerHTML = "";
 
-  // 🔁 Se siamo in modalità "mostra solo nascosti"
+  // 🔁 Mostra solo brani nascosti
   if (mostraSoloNascosti) {
     nascostiContainer.classList.remove("hidden");
 
@@ -502,60 +547,66 @@ function renderEditorTable() {
       scalettaNascosta.appendChild(li);
     });
 
-    // Nascondi la lista ordinabile principale
     scalettaLista.classList.add("hidden");
-  } else {
-    // ➜ Mostra lista normale
-    nascostiContainer.classList.add("hidden");
-    scalettaLista.classList.remove("hidden");
-
-    canzoni.forEach((song, index) => {
-      const li = document.createElement("li");
-
-      const pren = prenotazioni.find(p => p.song === song);
-      const fullName = pren ? pren.name : "";
-
-      let displayName = fullName;
-      if (fullName && fullName.trim().includes(" ")) {
-        displayName = fullName.trim().split(" ")[0] + "…";
-      }
-
-      li.innerHTML = `
-        <div class="svg-edit" style="display:flex;flex-direction:column;">
-          <span><strong>${index + 1}.</strong>
-            <svg class="w-6 h-6 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg"
-              width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 16.5c0 1.3807-1.1193 2.5-2.5 2.5C8.11929 19 7 17.8807 7 16.5S8.11929 14 9.5 14c1.3807 0 2.5 1.1193 2.5 2.5Zm0 0V5c2.5 0 6 2.5 4.5 7"/>
-            </svg>
-            ${song}
-          </span>
-          ${fullName ? `<span class="utente-troncato">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0
-                3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1
-                12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
-            </svg> ${displayName}
-          </span>` : ""}
-        </div>
-      `;
-
-      if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
-      else if (index < branoCorrente - 1) li.classList.add("suonati");
-
-      li.addEventListener("click", () => {
-        apriMenuModifica(index, song, fullName || null);
-      });
-
-      scalettaLista.appendChild(li);
-    });
-
-    //initSortableScaletta();
+    return;
   }
 
+  // ✅ Mostra scaletta normale
+  nascostiContainer.classList.add("hidden");
+  scalettaLista.classList.remove("hidden");
+
+  // ✅ ORDINA canzoni con prenotate in cima (ordine prenotazioni)
+  const prenotate = prenotazioni.map(p => p.song).filter((s, i, a) => a.indexOf(s) === i);
+  const nonPrenotate = canzoni.filter(song => !prenotate.includes(song));
+  const scalettaOrdinata = [...prenotate, ...nonPrenotate];
+  canzoni = scalettaOrdinata; // aggiorna lo stato globale
+
+  scalettaOrdinata.forEach((song, index) => {
+    const li = document.createElement("li");
+
+    const pren = prenotazioni.find(p => p.song === song);
+    const fullName = pren ? pren.name : "";
+
+    let displayName = fullName;
+    if (fullName && fullName.trim().includes(" ")) {
+      displayName = fullName.trim().split(" ")[0] + "…";
+    }
+
+    li.innerHTML = `
+      <div class="svg-edit" style="display:flex;flex-direction:column;">
+        <span><strong>${index + 1}.</strong>
+          <svg class="w-6 h-6 text-gray-800 dark:text-white" xmlns="http://www.w3.org/2000/svg"
+            width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 16.5c0 1.3807-1.1193 2.5-2.5 2.5C8.11929 19 7 17.8807 7 16.5S8.11929 14 9.5 14c1.3807 0 2.5 1.1193 2.5 2.5Zm0 0V5c2.5 0 6 2.5 4.5 7"/>
+          </svg>
+          ${song}
+        </span>
+        ${fullName ? `<span class="utente-troncato">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0
+              3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1
+              12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"/>
+          </svg> ${displayName}
+        </span>` : ""}
+      </div>
+    `;
+
+    if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
+    else if (index < branoCorrente - 1) li.classList.add("suonati");
+
+    li.addEventListener("click", () => {
+      apriMenuModifica(index, song, fullName || null);
+    });
+
+    scalettaLista.appendChild(li);
+  });
+
   scrollToCurrentSong();
+  updateCurrentSongIndexDisplay();
+  initScalettaDrag();
 }
 
 
@@ -998,49 +1049,3 @@ document.getElementById("searchSetlist").addEventListener("input", function () {
   });
 });
 
-// DRAG & DROP SCORRETTO PER BRANI PRENOTATI
-
-function initScalettaDrag() {
-  const el = document.getElementById("scalettaLista");
-  if (!el) return;
-
-  new Sortable(el, {
-    animation: 150,
-    delay: 500,
-    delayOnTouchOnly: true,
-    fallbackTolerance: 5,
-    fallbackOnBody: true,
-    touchStartThreshold: 5,
-    forceFallback: true,
-    ghostClass: "sortable-ghost",
-
-    onEnd: (evt) => {
-      const fromIndex = evt.oldIndex;
-      const toIndex = evt.newIndex;
-
-      if (fromIndex === toIndex) return;
-
-      const songMoved = canzoni[fromIndex];
-      const isPrenotato = prenotazioni.some(p => p.song === songMoved);
-
-      const moveSong = () => {
-        const updated = [...canzoni];
-        updated.splice(fromIndex, 1);
-        updated.splice(toIndex, 0, songMoved);
-        canzoni = updated;
-
-        set(ref(db, "songs"), canzoni);
-        renderEditorTable();
-      };
-
-      if (isPrenotato) {
-        showCustomConfirm(
-          `Il brano "<strong>${songMoved}</strong>" è prenotato.<br>Sei sicuro di volerlo spostare?`,
-          moveSong
-        );
-      } else {
-        moveSong();
-      }
-    }
-  });
-}
