@@ -509,31 +509,26 @@ function save() {
 
 function initSortableScaletta() {
   const el = document.getElementById("scalettaLista");
-  if (Sortable.active && Sortable.active.el === el) return;
 
   new Sortable(el, {
     animation: 150,
     delay: 500,
     delayOnTouchOnly: true,
+    fallbackTolerance: 5,
     touchStartThreshold: 5,
+    fallbackOnBody: true,
+    forceFallback: true,
     ghostClass: "sortable-ghost",
-
-    // ⏱️ Dopo delay, pronto per il drag
     onChoose: (evt) => {
       evt.item.classList.add("drag-ready");
-
-      // ⚠️ Impedisce lo scroll durante il drag (solo temporaneamente)
       evt.item.style.touchAction = "none";
-
-      // Vibrazione breve per feedback (solo dispositivi che lo supportano)
       if (navigator.vibrate) navigator.vibrate(50);
     },
-
-    // 🛑 Rimuove lo stile animato e ripristina il touch
+    onStart(evt) {
+      console.log("🎯 Drag started", evt);
+    },
     onEnd: (evt) => {
       evt.item.classList.remove("drag-ready");
-
-      // ✅ Ripristina il comportamento touch normale
       evt.item.style.touchAction = "";
 
       const nuoviBrani = [];
@@ -551,6 +546,7 @@ function initSortableScaletta() {
     }
   });
 }
+
 
 //Scaletta Completa
 function renderEditorTable() {
