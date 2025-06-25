@@ -1221,3 +1221,8 @@ button {
   justify-content: center;
 }
 
+.alert-second {
+  font-size: medium;
+  font-weight: 400;
+  font-style: italic;
+}

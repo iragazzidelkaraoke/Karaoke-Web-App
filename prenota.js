@@ -75,7 +75,8 @@ const isEditor = window.location.href.includes("editor=true");
 const song = sessionStorage.getItem("selectedSong");
 
 if (!song) {
-  alert("Nessun brano selezionato. Torna alla pagina principale.");
+  showCustomAlert("Nessun brano selezionato. Torna alla pagina principale.");
+//  alert("Nessun brano selezionato. Torna alla pagina principale.");
   window.location.href = "home.html";
 }
 
@@ -142,7 +143,8 @@ Promise.all([get(reservationsRef), get(lockedRef), get(configRef)]).then(
     maxPrenotazioni = configSnap.exists() ? configSnap.val().maxPrenotazioni || 25 : 25;
 
     if (!locked || alreadyReserved) {
-      alert("Il brano non è disponibile.");
+      showCustomAlert("Il brano non è disponibile.");
+      //alert("Il brano non è disponibile.");
       window.location.href = "home.html";
     }
 
@@ -164,7 +166,8 @@ bookingForm.addEventListener("submit", async (e) => {
 
 const validReservations = reservations.filter(r => r && r.name);
 if (validReservations.find(r => r.name === name)) {
-    alert("Qualcuno ha già prenotato con questo nome!");
+    showCustomAlert("Qualcuno ha già prenotato con questo nome!😓​ <h4 class='alert-second'>✨Rendi unico il tuo nome in modo che possiamo chiamarti senza fraintendimenti✨ </h4>");
+    //alert("Qualcuno ha già prenotato con questo nome!");
     return;
   }
 
@@ -242,6 +245,49 @@ onValue(configRef, (snapshot) => {
     maxPrenotazioni = config.maxPrenotazioni || 25;
   }
 });
+
+function showCustomAlert(message, options = {}) {
+  const modal = document.getElementById("customAlertModal");
+  const msgBox = document.getElementById("customAlertMessage");
+
+  msgBox.innerHTML = message;
+  modal.classList.remove("hidden");
+
+
+  function handleEnterAlert(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+      document.removeEventListener("keydown", handleEnterAlert);
+    }
+  }
+document.addEventListener("keydown", handleEnterAlert);
+
+
+  const buttons = modal.querySelectorAll(".close-alert");
+  const shouldShowButtons = options.buttons !== false;
+
+  buttons.forEach(btn => {
+    btn.style.display = shouldShowButtons ? "inline-block" : "none";
+    btn.onclick = () => {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+    };
+  });
+
+  document.addEventListener("mousedown", function handleOutsideClick(event) {
+    if (
+      !modal.classList.contains("hidden") &&
+      !modal.querySelector(".modal-content").contains(event.target) &&
+      shouldShowButtons
+    ) {
+      modal.classList.add("hidden");
+      if (typeof options.onClose === "function") options.onClose();
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+  });
+}
 
 
 
