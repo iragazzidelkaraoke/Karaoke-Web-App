@@ -299,18 +299,19 @@ function updateReservationBanner() {
   const user = filtered[index];
   const diff = index - (branoCorrente - 1);
 
-  if (diff > 0) {
-    reservationInfo.innerHTML = `Hai già prenotato <strong>${user.song}</strong>. <div class='quanto-manca'><h4>Mancano ${diff} brani al tuo turno.</h4></div>`;
+  if (diff > 1) {
+    reservationInfo.innerHTML = `Hai già prenotato: <br> <strong>${user.song}</strong>. <div class='quanto-manca'><h4>Mancano ${diff} brani al tuo turno.</h4></div>`;
     reservationBox.classList.remove("hidden");
   } else if (diff === 0) {
-    reservationInfo.innerHTML = `È il tuo turno! Preparati a cantare <strong>${user.song}</strong>!`;
+    reservationInfo.innerHTML = `Preparati a cantare: <br> <strong>${user.song}</strong>! <div class='quanto-manca'><h4>🎤✨ È il tuo turno! ✨</h4></div>`;
     reservationBox.classList.remove("hidden");
+  } else if (diff === 1) {
+    reservationInfo.innerHTML = `Hai già prenotato: <br> <strong>${user.song}</strong>. <div class='quanto-manca'><h4>Manca ${diff} brano al tuo turno.</h4></div>`;
+    reservationBox.classList.remove("hidden")
   } else {
-    reservationInfo.innerHTML = `Hai già cantato <strong>${user.song}</strong>. Grazie per la tua esibizione! 🎤`;
+    reservationInfo.innerHTML = `Hai già cantato: <br> <strong>${user.song}</strong>. Grazie per la tua esibizione! 🎤`;
     reservationBox.classList.remove("hidden");
     returnBtn.classList.add("hidden")
-
-
     // Nasconde il banner dopo 5 secondi
     setTimeout(() => {
       reservationBox.classList.add("hidden");
