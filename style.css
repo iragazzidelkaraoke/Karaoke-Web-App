@@ -1226,3 +1226,37 @@ button {
   font-weight: 400;
   font-style: italic;
 }
+
+
+.notice-box {
+  background: linear-gradient(290deg, #e4ebff, #ffd6e6);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  font-size: 1rem;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+
+
+}
+
+
+.quanto-manca{
+  display: flex;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  border-radius: 8px;
+  margin-top: 12px;
+  height: 3rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+
+
+.quanto-manca h4{
+  margin: 0;
+
+}
+

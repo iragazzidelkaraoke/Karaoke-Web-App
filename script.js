@@ -156,6 +156,13 @@ let bloccaRender = false;
 document.addEventListener("DOMContentLoaded", () => {
 
 
+// Crea dinamicamente banner per prenotazione attiva
+const reservationBox = document.getElementById("existingReservationBox");
+const reservationInfo = document.getElementById("reservationInfo");
+const returnBtn = document.getElementById("returnToWaitingBtn");
+
+
+
 
 
 
@@ -261,6 +268,7 @@ document.addEventListener("click", (e) => {
        renderSongs();
            updateWaitingMsg();
            updatePostiCounter();
+           updateReservationBanner();
     });
 
      
@@ -274,8 +282,46 @@ document.addEventListener("click", (e) => {
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
     updatePostiCounter();
+    updateReservationBanner();
+
   }
 });
+
+
+function updateReservationBanner() {
+  const userName = sessionStorage.getItem("userName");
+  if (!userName) return;
+
+  const filtered = prenotazioni.filter(r => r && r.name);
+  const index = filtered.findIndex(r => r.name === userName);
+  if (index === -1) return;
+
+  const user = filtered[index];
+  const diff = index - (branoCorrente - 1);
+
+  if (diff > 0) {
+    reservationInfo.innerHTML = `Hai già prenotato <strong>${user.song}</strong>. <div class='quanto-manca'><h4>Mancano ${diff} brani al tuo turno.</h4></div>`;
+    reservationBox.classList.remove("hidden");
+  } else if (diff === 0) {
+    reservationInfo.innerHTML = `È il tuo turno! Preparati a cantare <strong>${user.song}</strong>!`;
+    reservationBox.classList.remove("hidden");
+  } else {
+    reservationInfo.innerHTML = `Hai già cantato <strong>${user.song}</strong>. Grazie per la tua esibizione! 🎤`;
+    reservationBox.classList.remove("hidden");
+    returnBtn.classList.add("hidden")
+
+
+    // Nasconde il banner dopo 5 secondi
+    setTimeout(() => {
+      reservationBox.classList.add("hidden");
+    }, 5000);
+  }
+
+  returnBtn.onclick = () => {
+    window.location.href = "waiting.html";
+  };
+}
+
 
 
 
