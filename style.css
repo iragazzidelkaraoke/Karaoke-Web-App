@@ -1266,3 +1266,9 @@ button {
   background: linear-gradient(150deg, #d3dcff, #ffe0eb);
   border: 1px solid #45a9b4;
 } 
+
+
+#scalettaLista p {
+  color: #000;
+  font-family: 'Roboto' sans-serif;
+}
