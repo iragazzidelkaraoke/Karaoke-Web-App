@@ -1052,7 +1052,7 @@ button {
 
 .scaletta-lista li.playing {
   position: relative;
-  background: linear-gradient(150deg, #d1f5d3, #d1f5d38e) ;
+  background: linear-gradient(150deg, #e1ffe3, #90f095) ;
   font-weight: bold;
   color: #155724;
 }
@@ -1072,7 +1072,7 @@ button {
 }
 
 .scaletta-lista li.suonati {
-  background: linear-gradient(150deg, #c1c1c1, #d8d8d871 );
+  background: linear-gradient(150deg, #ebebeb, #cdcdcd95 );
   color: #555;
   text-decoration: line-through;
 }
@@ -1261,3 +1261,8 @@ button {
 
 }
 
+
+.scaletta-lista .prenotato {
+  background: linear-gradient(150deg, #d3dcff, #ffe0eb);
+  border: 1px solid #45a9b4;
+} 

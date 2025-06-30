@@ -594,6 +594,8 @@ function renderEditorTable() {
       </div>
     `;
 
+    if (pren) li.classList.add("prenotato");
+
     if (branoCorrente > 0 && index === branoCorrente - 1) li.classList.add("playing");
     else if (index < branoCorrente - 1) li.classList.add("suonati");
 
