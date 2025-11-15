@@ -1,3 +1,4 @@
+/*Versione Funzionante*/
 import { getDatabase, ref, onValue, onDisconnect, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 
