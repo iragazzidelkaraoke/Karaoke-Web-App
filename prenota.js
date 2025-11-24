@@ -219,7 +219,7 @@ const countdownInterval = setInterval(() => {
     }, 1000);
 
 
-function checkMaxPrenotazioniLive() {
+/*function checkMaxPrenotazioniLive() {
   const unsubscribe = onValue(reservationsRef, (snapshot) => {
     const data = snapshot.exists() ? snapshot.val() : [];
     if (data.length >= maxPrenotazioni) {
@@ -237,7 +237,47 @@ const alreadyThere = validData.find(r => r.name === currentUserName);
       }
     }
   });
+}*/
+
+// dentro prenota.js — funzione checkMaxPrenotazioniLive (sostituisci la logica di redirect esistente)
+function checkMaxPrenotazioniLive() {
+  const unsubscribe = onValue(reservationsRef, async (snapshot) => {
+    const data = snapshot.exists() ? snapshot.val() : [];
+    // Se non ci sono prenotazioni non c'è problema
+    if (data.length < 1) {
+      return;
+    }
+
+    // Se la lunghezza raggiunge o supera il max conosciuto, confermiamo leggendo la config aggiornata
+    if (data.length >= maxPrenotazioni) {
+      // recupera valore aggiornato dal DB (evita la race con config onValue)
+      try {
+        const configSnap = await get(configRef);
+        const actualMax = configSnap.exists() ? (configSnap.val().maxPrenotazioni || 25) : 25;
+
+        const currentUserName = sessionStorage.getItem("userName");
+        const validData = data.filter(r => r && r.name);
+        const alreadyThere = validData.find(r => r.name === currentUserName);
+
+        if (validData.length >= actualMax && !alreadyThere && !window.location.href.includes("editor=true")) {
+          // reindirizza con una piccola delay se necessario
+          setTimeout(() => {
+            window.location.href = "max.html";
+          }, 500);
+        } else {
+          // Se invece non supera il max effettivo non fare nulla (ferma il redirect)
+          // e tieni attivo il listener
+        }
+      } catch (err) {
+        console.error("Errore leggendo config per confermare maxPrenotazioni:", err);
+        // in caso di errore di rete: preferisco NON reindirizzare gli utenti in modo da non bloccare l'accesso
+      }
+    }
+  });
+
+  return unsubscribe;
 }
+
 
 
 onValue(configRef, (snapshot) => {

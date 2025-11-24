@@ -544,7 +544,7 @@ function renderEditorTable() {
         </div>
       `;
 li.querySelector(".show-btn").addEventListener("click", () => {
-  moveToVisible(hiddenSong);
+  moveToVisible(song);
 
   // Rimuove tutti i cloni visibili nella ricerca
   document.querySelectorAll(".hidden-search-clone").forEach(el => el.remove());
