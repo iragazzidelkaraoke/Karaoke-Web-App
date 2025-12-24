@@ -1278,7 +1278,7 @@ button {
 
 
 /* -----------------------------------------------------XMAS THEME ------------------------------------------------------------------- */
-
+/*
 body {
   background: linear-gradient(180deg, #ff0000 0%, #fc7272 100%) !important;
   background-attachment: fixed;
@@ -1376,7 +1376,6 @@ button:hover::after {
   }
 }
 
-/* Piccolo sollevamento */
 button:hover {
   transform: translateY(-2px);
 }
@@ -1416,3 +1415,4 @@ button:hover {
 
 
 
+*/
