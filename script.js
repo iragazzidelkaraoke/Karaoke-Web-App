@@ -67,6 +67,8 @@ const isEditor = window.location.href.includes("editor=true");
 
 let maxPrenotazioniDaDb = 25;
 let prenotazioniDaDb = [];
+let configLoaded = false;
+
 
 
 
@@ -125,15 +127,24 @@ Promise.all([
   if (configSnap.exists()) {
     maxPrenotazioniDaDb = configSnap.val().maxPrenotazioni || 25;
   }
+  maxPrenotazioni = maxPrenotazioniDaDb; // <-- FONDAMENTALE
+  //configLoaded = true;                   // <-- FONDAMENTALE
+
 
   if (reservationsSnap.exists()) {
     prenotazioniDaDb = reservationsSnap.val();
   }
 
-  // Se è superato e non è editor → redirect
-  if (prenotazioniDaDb.length >= maxPrenotazioniDaDb && !isEditor) {
-    window.location.href = "max.html";
-  }
+// Se è superato e non è editor → redirect (conteggio reale, ignora buchi)
+const raw = reservationsSnap.exists() ? reservationsSnap.val() : [];
+const prenCount = Array.isArray(raw)
+  ? raw.filter(r => r && r.name && r.song).length
+  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
+
+if (prenCount >= maxPrenotazioniDaDb && !isEditor) {
+  window.location.href = "max.html";
+}
+
   // ✅ SOLO se NON è stato fatto il redirect:
   document.body.style.visibility = "visible";  
 });
@@ -145,12 +156,13 @@ const configRef = ref(db, 'config');
 
 let maxPrenotazioni = 25;
 let prenotazioni = [];
+let unsubscribeMaxPren = null;
 let canzoni = [];
 let selectedSong = null;
 let editorMode = false;
 let branoCorrente = 0;
-let currentUserName = null;
 let bloccaRender = false;
+  let currentUserName = null;
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -204,8 +216,8 @@ const returnBtn = document.getElementById("returnToWaitingBtn");
   const editorTableBody = document.querySelector("#editorTable tbody");
 
  //cost search and filter bar
-  //const searchBar = document.getElementById("filterBars");
-  //const searchInput = document.getElementById("searchInput");
+  const searchBar = document.getElementById("filterBars");
+  const searchInput = document.getElementById("searchInput");
   //const sortSelect = document.getElementById("sortSelect");
   
 
@@ -245,31 +257,34 @@ document.addEventListener("click", (e) => {
   // DATI DA FIREBASE
 
 
-     onValue(songsRef, snapshot => {
-      if (snapshot.exists()) {
-        canzoni = snapshot.val();
-      } else {
-        canzoni = [
-          "Wonderwall - Oasis",
-          "Zombie - The Cranberries",
-          "Bohemian Rhapsody - Queen",
-          "Azzurro - Adriano Celentano"
-        ];
-        set(songsRef, canzoni); // salva solo se vuoto
-      }
-      renderSongs();
-     });
-     
+onValue(songsRef, snapshot => {
+  if (snapshot.exists()) {
+    const val = snapshot.val();
+    const arr = Array.isArray(val) ? val : Object.values(val || {});
+    canzoni = arr.filter(s => typeof s === "string" && s.trim().length > 0);
+  } else {
+    canzoni = [
+      "Wonderwall - Oasis",
+      "Zombie - The Cranberries",
+      "Bohemian Rhapsody - Queen",
+      "Azzurro - Adriano Celentano"
+    ];
+    set(songsRef, canzoni);
+  }
+  renderSongs();
+});
+
      
 
 
-    onValue(reservationsRef, snapshot => {
-       prenotazioni = snapshot.exists() ? snapshot.val() : [];
-       renderSongs();
-           updateWaitingMsg();
-           updatePostiCounter();
-           updateReservationBanner();
-    });
+onValue(reservationsRef, snapshot => {
+  const val = snapshot.exists() ? snapshot.val() : [];
+  prenotazioni = Array.isArray(val) ? val : Object.values(val || {});
+  renderSongs();
+  updateWaitingMsg();
+  updatePostiCounter();
+  updateReservationBanner();
+});
 
      
      onValue(configRef, snapshot => {
@@ -284,6 +299,9 @@ document.addEventListener("click", (e) => {
     updatePostiCounter();
     updateReservationBanner();
 
+        configLoaded = true;
+    renderSongs();
+
   }
 });
 
@@ -292,7 +310,8 @@ function updateReservationBanner() {
   const userName = sessionStorage.getItem("userName");
   if (!userName) return;
 
-  const filtered = prenotazioni.filter(r => r && r.name);
+const prenRaw = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+const filtered = prenRaw.filter(r => r && r.name);
   const index = filtered.findIndex(r => r.name === userName);
   if (index === -1) return;
 
@@ -327,28 +346,51 @@ function updateReservationBanner() {
 
 
 function checkMaxPrenotazioniLive() {
-  const unsubscribe = onValue(reservationsRef, (snapshot) => {
-    const data = snapshot.exists() ? snapshot.val() : [];
-    if (data.length >= maxPrenotazioni) {
-      //  Se è già stato prenotato da questo utente, NON reindirizzare
-      const currentUserName = sessionStorage.getItem("userName");
-      const alreadyThere = data.find(r => r.name === currentUserName);
-      if (!alreadyThere && !window.location.href.includes("editor=true")) {
-        setTimeout(() => {
-          window.location.href = "max.html";
-        }, 500);
-        
-      } else {
-        unsubscribe(); //  Disattiva il listener dopo la prenotazione
-      }
+  return onValue(reservationsRef, (snapshot) => {
+    if (!configLoaded) return;
+
+const raw = snapshot.exists() ? snapshot.val() : [];
+const count = Array.isArray(raw)
+  ? raw.filter(r => r && r.name && r.song).length
+  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
+
+    // debug utilissimo
+    console.log("HOME CHECK MAX", { count, maxPrenotazioni, configLoaded });
+
+    if (count < maxPrenotazioni) return;
+
+    const currentUserName = sessionStorage.getItem("userName");
+
+    // se vuoi evitare redirect per chi è già in lista:
+    const data = snapshot.val() || [];
+    const validData = Array.isArray(data)
+      ? data.filter(r => r && r.name)
+      : Object.values(data).filter(r => r && r.name);
+
+    const alreadyThere = currentUserName
+      ? validData.some(r => r.name === currentUserName)
+      : false;
+
+      if (alreadyThere && typeof unsubscribeMaxPren === "function") {
+  unsubscribeMaxPren();
+  unsubscribeMaxPren = null;
+}
+
+
+    if (!alreadyThere && !window.location.href.includes("editor=true")) {
+      setTimeout(() => (window.location.href = "max.html"), 200);
     }
   });
 }
 
 
-checkMaxPrenotazioniLive();
 
+  function saveConfigOnly() {
+  const annullaLimite = parseInt(annullaLimiteInput.value) || 0;
+  maxPrenotazioni = parseInt(maxPrenotazioniInput.value) || 25;
 
+  set(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
+}
 
 
 onValue(lockedSongsRef, (snapshot) => {
@@ -357,8 +399,9 @@ onValue(lockedSongsRef, (snapshot) => {
 });
 
 
-      maxPrenotazioniInput.addEventListener("change", save);
-  annullaLimiteInput.addEventListener("change", save);
+maxPrenotazioniInput.addEventListener("change", saveConfigOnly);
+annullaLimiteInput.addEventListener("change", saveConfigOnly);
+
 
 
 
@@ -370,19 +413,18 @@ onValue(lockedSongsRef, (snapshot) => {
   }
 
 
-function save() {
-    const annullaLimite = parseInt(annullaLimiteInput.value) || 0;
-    maxPrenotazioni = parseInt(maxPrenotazioniInput.value) || 25;
-  set(songsRef, canzoni);
-  set(reservationsRef, prenotazioni);
-  set(configRef, {
-  maxPrenotazioni,
-  branoCorrente,
-  annullaLimite
-});
 
-set(ref(db), "lock123");
-  
+
+function save() {
+  const annullaLimite = parseInt(annullaLimiteInput.value) || 0;
+  maxPrenotazioni = parseInt(maxPrenotazioniInput.value) || 25;
+
+  if (editorMode || isEditor) {
+    set(songsRef, canzoni);
+    set(reservationsRef, prenotazioni);
+  }
+
+  set(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
 }
 
 
@@ -391,90 +433,143 @@ set(ref(db), "lock123");
 
 // Search & Filter 
 function renderSongs() {
-  songList.innerHTML = "";
-  const search = searchInput.value.toLowerCase();
-  const sortValue = sortValueWrapper.value;
+  try {
+    console.log("renderSongs()", {
+      canzoniType: typeof canzoni,
+      canzoniIsArray: Array.isArray(canzoni),
+      prenType: typeof prenotazioni,
+      prenIsArray: Array.isArray(prenotazioni),
+      maxPrenotazioni,
+      configLoaded,
+      editorMode
+    });
 
+    if (!songList) return;
 
-  if (editorMode) {
-    infoSection.classList.add("hidden");
-    frontSign.classList.add("hidden");
-    //searchBar.classList.add("hidden");
-    songSection.classList.add("hidden");
-    waitingSection.classList.add("hidden");
-    editorPanel.classList.remove("hidden");
-    renderEditorList();
-    return;
-  } else {
-    infoSection.classList.remove("hidden");
-    editorPanel.classList.add("hidden");
-  }
-
-  if (prenotazioni.length >= maxPrenotazioni && !editorMode && !currentUserName && !isEditor) {
-    window.location.href = "max.html";
-    return;
-  }
-
-  songSection.classList.remove("hidden");
-  //searchBar.classList.remove("hidden");
-  frontSign.classList.remove("hidden");
-
-  const sorted = [...canzoni].sort((a, b) => {
-  const [aTitle, aArtist] = a.split(" - ");
-  const [bTitle, bArtist] = b.split(" - ");
-  if (sortValue === "title") return aTitle.localeCompare(bTitle);
-  if (sortValue === "artist") return aArtist.localeCompare(bArtist);
-  return 0;
-  });
-
-  let count = 0;
-  for (const song of sorted) {
-    if (!song.toLowerCase().includes(search)) continue;
-    count++;
-    const li = document.createElement("li");
-    li.textContent = song;
-
-    const validPrenotazioni = prenotazioni.filter(p => p && p.song);
-    const prenotato = validPrenotazioni.find(p => p.song === song);
-    const isLocked = lockedSongs && lockedSongs[song];
-    if (sortValue === "free" && (prenotato || isLocked)) continue;
-
-    const button = document.createElement("button");
-
-    if (prenotato || isLocked) {
-      button.textContent = prenotato ? "Prenotato" : "In attesa...";
-      button.disabled = true;
-      button.classList.add("btn-secondary");
-    } else {
-      button.textContent = "Prenota";
-      button.classList.add("btn");
-      button.addEventListener("click", () => {
-        // Blocca il brano in Firebase
-        set(ref(db, "lockedSongs/" + song), true).then(() => {
-          sessionStorage.setItem("selectedSong", song);
-          window.location.href = "prenota.html";
-        });
-      });
+    // Se la config non è pronta, non renderizzare (evita stati "mezzi")
+    if (!configLoaded) {
+      songList.innerHTML = "";
+      return;
     }
 
-    li.appendChild(button);
-    songList.appendChild(li);
+    // Normalizza songs: array di stringhe valide
+    const songsRaw = Array.isArray(canzoni) ? canzoni : Object.values(canzoni || {});
+    const safeSongs = songsRaw
+      .filter(s => typeof s === "string" && s.trim().length > 0);
+
+    // Normalizza prenotazioni: array di oggetti validi
+    const prenRaw = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+    const validPrenotazioni = prenRaw
+      .filter(p => p && typeof p.song === "string" && p.song.trim().length > 0 && typeof p.name === "string");
+
+    const prenCount = validPrenotazioni.length;
+
+    // Search (robusto anche se searchInput non è definito)
+    const searchEl = document.getElementById("searchInput");
+    const search = (searchEl?.value || "").toLowerCase();
+
+    const sortValue = (sortValueWrapper?.value || "title");
+
+    // Modalità editor
+    if (editorMode) {
+      infoSection?.classList.add("hidden");
+      frontSign?.classList.add("hidden");
+      songSection?.classList.add("hidden");
+      waitingSection?.classList.add("hidden");
+      editorPanel?.classList.remove("hidden");
+      renderEditorList();
+      return;
+    } else {
+      infoSection?.classList.remove("hidden");
+      editorPanel?.classList.add("hidden");
+    }
+
+    // Se max raggiunto, manda a max.html SOLO se non è editor e l'utente non è già dentro la lista
+    const sessionUserName = sessionStorage.getItem("userName");
+    const nameToCheck = currentUserName || sessionUserName;
+
+    const alreadyThere = nameToCheck
+      ? validPrenotazioni.some(p => p.name === nameToCheck)
+      : false;
+
+
+    if (prenCount >= maxPrenotazioni && !isEditor && !alreadyThere) {
+      window.location.href = "max.html";
+      return;
+    }
+
+    // UI show
+    songSection?.classList.remove("hidden");
+    frontSign?.classList.remove("hidden");
+
+    // Ora possiamo svuotare e renderizzare
+    songList.innerHTML = "";
+
+    // Sorting robusto (non crasha se manca " - ")
+    const sorted = [...safeSongs].sort((a, b) => {
+      const [aTitle, aArtist] = String(a).split(" - ");
+      const [bTitle, bArtist] = String(b).split(" - ");
+
+      if (sortValue === "title") return (aTitle || "").localeCompare(bTitle || "");
+      if (sortValue === "artist") return (aArtist || "").localeCompare(bArtist || "");
+      return 0;
+    });
+
+    let shown = 0;
+
+    for (const song of sorted) {
+      const songStr = String(song);
+
+      if (!songStr.toLowerCase().includes(search)) continue;
+
+      const prenotato = validPrenotazioni.find(p => p.song === songStr);
+      const isLocked = !!(lockedSongs && lockedSongs[songStr]);
+
+      if (sortValue === "free" && (prenotato || isLocked)) continue;
+
+      shown++;
+
+      const li = document.createElement("li");
+      li.textContent = songStr;
+
+      const button = document.createElement("button");
+
+      if (prenotato || isLocked) {
+        button.textContent = prenotato ? "Prenotato" : "In attesa...";
+        button.disabled = true;
+        button.classList.add("btn-secondary");
+      } else {
+        button.textContent = "Prenota";
+        button.classList.add("btn");
+        button.addEventListener("click", () => {
+          set(ref(db, "lockedSongs/" + songStr), true).then(() => {
+            sessionStorage.setItem("selectedSong", songStr);
+            window.location.href = "prenota.html";
+          });
+        });
+      }
+
+      li.appendChild(button);
+      songList.appendChild(li);
+    }
+
+    if (shown === 0) {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        Il brano che cerchi non è in scaletta?<br>
+        <button onclick="window.location.href='richieste.html'">Richiedi Ora</button>
+      `;
+      songList.appendChild(li);
+    }
+  } catch (e) {
+    console.error("❌ renderSongs CRASH", e);
   }
-
-if (count === 0) {
-  const li = document.createElement("li");
-  li.innerHTML = `
-    Il brano che cerchi non è in scaletta?<br>
-    <button onclick="window.location.href='richieste.html'">Richiedi Ora</button>
-  `;
-  songList.appendChild(li);
 }
 
-}
 
 
 //sortSelect.addEventListener("change", renderSongs);
-searchInput.addEventListener("input", renderSongs);
+searchInput?.addEventListener("input", renderSongs);
 
 
 
@@ -483,7 +578,8 @@ searchInput.addEventListener("input", renderSongs);
     editableSongList.innerHTML = "";
 
     // Ordina le canzoni: prenotate prima, non prenotate dopo
-    const prenotate = prenotazioni.map(p => p.song);
+const prenArr = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+const prenotate = prenArr.filter(p => p && p.song).map(p => p.song);
     const nonPrenotate = canzoni.filter(song => !prenotate.includes(song));
     canzoni = prenotate.concat(nonPrenotate).filter((v, i, a) => a.indexOf(v) === i);
 
@@ -498,7 +594,9 @@ searchInput.addEventListener("input", renderSongs);
   }
 
   function renderEditorTable() {
+    
   editorTableBody.innerHTML = "";
+  const prenArr = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
   canzoni.forEach((song, index) => {
     const row = document.createElement('tr');
 
@@ -509,7 +607,7 @@ searchInput.addEventListener("input", renderSongs);
     songCell.textContent = song;
 
     const userCell = document.createElement("td");
-    const user = prenotazioni.find(p => p.song === song);
+    const user = prenArr.find(p => p && p.song === song);
     userCell.textContent = user ? user.name : "";
 
     const removeCell = document.createElement("td");
@@ -547,8 +645,9 @@ searchInput.addEventListener("input", renderSongs);
   });
 
   downloadCSVBtn.addEventListener("click", () => {
+    const prenArr = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
     const rows = [["Nome", "Brano"]];
-    prenotazioni.forEach(p => rows.push([p.name, p.song]));
+    prenArr.filter(p => p && p.name && p.song).forEach(p => rows.push([p.name, p.song]));
     const csvContent = rows.map(r => r.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -596,12 +695,11 @@ searchInput.addEventListener("input", renderSongs);
 
 
 
-  let currentUserName = null;
 function showWaitingSection(userName) {
   currentUserName = userName;
   updateWaitingMsg();
   frontSign.classList.add("hidden");
-  searchBar.classList.add("hidden");
+  searchBar?.classList.add("hidden");
  // reservationForm.classList.add("hidden");
   songSection.classList.add("hidden");
   //maxReached.classList.add("hidden");
@@ -632,8 +730,9 @@ window.addEventListener("beforeunload", (e) => {
 function updateWaitingMsg() {
   if (!currentUserName) return;
 
-  const user = prenotazioni.find(p => p.name === currentUserName);
-  const pos = prenotazioni.findIndex(p => p.name === currentUserName);
+const prenRaw = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+const user = prenRaw.find(p => p && p.name === currentUserName);
+const pos = prenRaw.findIndex(p => p && p.name === currentUserName);
   const diff = pos - branoCorrente;
 
   if (!user) return;
@@ -667,10 +766,18 @@ function updateWaitingMsg() {
     const conferma = confirm("Sei sicuro di voler annullare la tua prenotazione?");
     if (!conferma) return;
 
-    const i = prenotazioni.findIndex(p => p.name === currentUserName);
+    const prenArr = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+    const i = prenArr.findIndex(p => p && p.name === currentUserName);
+
     if (i >= 0) {
-      const songToRestore = prenotazioni[i].song;
-      prenotazioni.splice(i, 1);
+      const songToRestore = prenArr[i].song;
+
+      // rimuovi dalla lista "prenArr"
+      prenArr.splice(i, 1);
+
+      // mantieni prenotazioni coerente
+      prenotazioni = prenArr;
+
       save();
 
       // Rimetti il brano in fondo alla lista
@@ -687,10 +794,7 @@ function updateWaitingMsg() {
 }
 
 
-  
-  annullaLimiteInput.addEventListener("change", () => {
-      save(); // ogni volta che l’input cambia, salva la nuova config
-    });
+
 
     
 
@@ -714,7 +818,11 @@ function updateWaitingMsg() {
 function updatePostiCounter() {
   const el = document.getElementById("postiCounter");
   if (!el) return;
-  el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
+
+  const prenRaw = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
+  const realCount = prenRaw.filter(p => p && p.name && p.song).length;
+
+  el.textContent = `Posti prenotati: ${realCount} / ${maxPrenotazioni}`;
 }
 
 setTimeout(() => {
@@ -744,9 +852,7 @@ setTimeout(() => {
 }, 140000); // 140 secondi
 
   
-checkMaxPrenotazioniLive();
-
-
+unsubscribeMaxPren = checkMaxPrenotazioniLive();
   
   
 });

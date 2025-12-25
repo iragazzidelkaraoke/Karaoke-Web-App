@@ -16,6 +16,8 @@ import { database, goOffline, goOnline } from './firebase.js';
 
 let inactivityTimer;
 let isConnected = true;
+let configLoaded = false;
+
 
 function disconnectAfterInactivity() {
   if (isConnected) {
@@ -149,10 +151,16 @@ Promise.all([get(reservationsRef), get(lockedRef), get(configRef)]).then(
       window.location.href = "home.html";
     }
 
-    // Se superato limite prenotazioni
-    if (reservations.length >= maxPrenotazioni && !isEditor) {
+    // Se superato limite prenotazioni (conteggio reale!) 
+const raw = resSnap.exists() ? resSnap.val() : [];
+const prenCount = Array.isArray(raw)
+  ? raw.filter(r => r && r.name && r.song).length
+  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
+
+    if (prenCount >= maxPrenotazioni && !isEditor) {
       window.location.href = "max.html";
     }
+
   }
 );
 
@@ -241,41 +249,44 @@ const alreadyThere = validData.find(r => r.name === currentUserName);
 
 // dentro prenota.js — funzione checkMaxPrenotazioniLive (sostituisci la logica di redirect esistente)
 function checkMaxPrenotazioniLive() {
-  const unsubscribe = onValue(reservationsRef, async (snapshot) => {
-    const data = snapshot.exists() ? snapshot.val() : [];
-    // Se non ci sono prenotazioni non c'è problema
-    if (data.length < 1) {
-      return;
-    }
+  return onValue(reservationsRef, async (snapshot) => {
+    if (!configLoaded) return;
 
-    // Se la lunghezza raggiunge o supera il max conosciuto, confermiamo leggendo la config aggiornata
-    if (data.length >= maxPrenotazioni) {
-      // recupera valore aggiornato dal DB (evita la race con config onValue)
-      try {
-        const configSnap = await get(configRef);
-        const actualMax = configSnap.exists() ? (configSnap.val().maxPrenotazioni || 25) : 25;
+const raw = snapshot.exists() ? snapshot.val() : [];
+const count = Array.isArray(raw)
+  ? raw.filter(r => r && r.name && r.song).length
+  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
 
-        const currentUserName = sessionStorage.getItem("userName");
-        const validData = data.filter(r => r && r.name);
-        const alreadyThere = validData.find(r => r.name === currentUserName);
+    // Log vero, sempre definito
+    console.log("CHECK MAX", { count, maxPrenotazioni, configLoaded });
 
-        if (validData.length >= actualMax && !alreadyThere && !window.location.href.includes("editor=true")) {
-          // reindirizza con una piccola delay se necessario
-          setTimeout(() => {
-            window.location.href = "max.html";
-          }, 500);
-        } else {
-          // Se invece non supera il max effettivo non fare nulla (ferma il redirect)
-          // e tieni attivo il listener
-        }
-      } catch (err) {
-        console.error("Errore leggendo config per confermare maxPrenotazioni:", err);
-        // in caso di errore di rete: preferisco NON reindirizzare gli utenti in modo da non bloccare l'accesso
+    if (count < maxPrenotazioni) return;
+
+    // conferma max dal DB (opzionale, ma ok)
+    try {
+      const configSnap = await get(configRef);
+      const actualMax = configSnap.exists() ? (configSnap.val().maxPrenotazioni || 25) : 25;
+
+      if (count < actualMax) return;
+
+      const currentUserName = sessionStorage.getItem("userName");
+      const data = snapshot.val() || [];
+      const validData = Array.isArray(data)
+        ? data.filter(r => r && r.name)
+        : Object.values(data).filter(r => r && r.name);
+
+      const alreadyThere = currentUserName
+        ? validData.some(r => r.name === currentUserName)
+        : false;
+
+      if (!alreadyThere && !window.location.href.includes("editor=true")) {
+        setTimeout(() => window.location.href = "max.html", 200);
       }
+    } catch (err) {
+      console.error("Errore leggendo config:", err);
+      // in caso di errore meglio non bloccare
     }
   });
-
-  return unsubscribe;
 }
 
 
@@ -284,6 +295,7 @@ onValue(configRef, (snapshot) => {
   if (snapshot.exists()) {
     const config = snapshot.val();
     maxPrenotazioni = config.maxPrenotazioni || 25;
+    configLoaded = true;
   }
 });
 
