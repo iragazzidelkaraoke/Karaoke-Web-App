@@ -200,6 +200,45 @@
       </label> 
       </section>
 
+            <section class="impost" id="blocksSection">
+        <label>
+          <div class="editor-header-row">
+            <div class="icons-title">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75h9A2.25 2.25 0 0 1 18.75 6v12A2.25 2.25 0 0 1 16.5 20.25h-9A2.25 2.25 0 0 1 5.25 18V6A2.25 2.25 0 0 1 7.5 3.75Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25h6M9 12h6M9 15.75h6" />
+              </svg>
+              <h3>Blocchi prenotazioni</h3>
+            </div>
+          </div>
+
+          <label class="toggle">
+            <input class="toggle-checkbox" type="checkbox" id="blocksEnabled">
+            <div class="toggle-switch"></div>
+            <span class="toggle-label"><strong>Blocchi attivi</strong></span>
+          </label>
+
+          <label for="blockSizeInput"><h4>Dimensione blocco</h4></label>
+          <input type="number" id="blockSizeInput" value="10" min="1" />
+
+          <label for="blockCountInput"><h4>Numero blocchi</h4></label>
+          <input type="number" id="blockCountInput" value="3" min="1" />
+
+          <label for="unlockAheadInput"><h4>Sblocco automatico X brani prima</h4></label>
+          <input type="number" id="unlockAheadInput" value="2" min="0" />
+
+          <div style="margin-top: 14px; padding: 10px 12px; border-radius: 8px; background: rgba(255,255,255,0.45);">
+            <div id="blocksStatusText" style="font-weight: 600; margin-bottom: 6px;"></div>
+            <div id="currentCapText" style="margin-bottom: 6px;"></div>
+            <div id="nextUnlockText"></div>
+          </div>
+
+          <button class="btn actions" id="openNextBlockBtn">Apri prossimo blocco ora</button>
+          <button class="btn btn-third actions" id="closeBlocksBtn">Chiudi blocchi e passa a max definitivo</button>
+          <button class="btn btn-secondary actions" id="resetBlocksBtn">Reset blocchi</button>
+        </label>
+      </section>
+
 
       <section class="azioni">
         <h3>Azioni</h3>

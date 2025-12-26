@@ -53,7 +53,9 @@
     const configRef = ref(db, "config");
     const reservationsRef = ref(db, "reservations");
 
-    let maxPrenotazioni = 25;
+    let totalMax = 25;
+    let maxPrenotazioni = 25; // cap effettivo (può essere < totalMax)
+    let blocksEnabled = false;
     let previousMax = null;
     let currentReservations = [];
     let initialLoad = true;
@@ -61,8 +63,18 @@
     function checkAndRedirect(reservations) {
       const container = document.getElementById("maxReached");
       const numPrenotazioni = Array.isArray(reservations)
-        ? reservations.filter(Boolean).length
-        : Object.keys(reservations).length;
+        ? reservations.filter(r => r && r.name && r.song).length
+        : Object.values(reservations || {}).filter(r => r && r.name && r.song).length;
+
+      // Se i blocchi sono attivi e il cap è < totalMax, questa pagina non è quella giusta.
+      if (blocksEnabled && maxPrenotazioni < totalMax) {
+        if (numPrenotazioni >= maxPrenotazioni) {
+          window.location.replace("blocked.html");
+        } else {
+          window.location.replace("index.html");
+        }
+        return;
+      }
 
       const postiLiberi = numPrenotazioni < maxPrenotazioni;
 
@@ -88,9 +100,21 @@
     }
 
     onValue(configRef, (snapshot) => {
-      const config = snapshot.val();
-      if (previousMax === null) previousMax = config.maxPrenotazioni || 25;
-      maxPrenotazioni = config.maxPrenotazioni || 25;
+      const config = snapshot.val() || {};
+
+      totalMax = config.maxPrenotazioni || 25;
+      const blocks = config.blocks || {};
+      blocksEnabled = !!blocks.enabled;
+
+      // cap effettivo
+      if (blocksEnabled) {
+        const cap = parseInt(blocks.currentCap || totalMax, 10);
+        maxPrenotazioni = Math.min(Math.max(1, cap), totalMax);
+      } else {
+        maxPrenotazioni = totalMax;
+      }
+
+      if (previousMax === null) previousMax = maxPrenotazioni;
       checkAndRedirect(currentReservations);
     });
 

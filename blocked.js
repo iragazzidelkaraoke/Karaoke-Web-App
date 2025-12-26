@@ -57,14 +57,16 @@ const db = getDatabase(app);
 const configRef = ref(db, "config");
 const reservationsRef = ref(db, "reservations");
 
-const waitingText = document.getElementById("waitingText");
-const countdownText = document.getElementById("countdownText");
-const stateText = document.getElementById("stateText");
+let waitingText = null;
+let countdownText = null;
+let stateText = null;
 
 let config = null;
 let reservationsRaw = null;
 
 function render() {
+  // DOM not ready yet
+  if (!waitingText || !countdownText || !stateText) return;
   if (!config || reservationsRaw === null) return;
 
   const blocks = normalizeBlocks(config);
@@ -91,27 +93,37 @@ function render() {
     return;
   }
 
-  // Auto-unlock: se siamo arrivati alla soglia, prova a sbloccare.
-  const threshold = blocks.currentCap - blocks.unlockAhead;
-  const branoCorrente = Number.parseInt(config.branoCorrente || 0, 10);
-  if (blocks.currentCap < totalMax && branoCorrente >= threshold) {
-    // Transaction-safe
-    tryAutoUnlock(configRef).catch(() => {});
-  }
-
   // Countdown (mancano N brani all'apertura)
   const remaining = getSongsRemainingToUnlock(config);
   waitingText.textContent = "Prenotazioni momentaneamente chiuse, si apriranno nuovi posti a breve.";
   countdownText.innerHTML = `<strong>Mancano ${remaining} brani</strong> all'apertura di nuovi posti.`;
-  stateText.textContent = "";
+
+  // Se siamo arrivati alla soglia, prova a sbloccare.
+  // (poi la pagina si aggiornerà e farà redirect quando il cap aumenta)
+  const threshold = blocks.currentCap - blocks.unlockAhead;
+  const branoCorrente = Number.parseInt(config.branoCorrente || 0, 10);
+  if (blocks.currentCap < totalMax && branoCorrente >= threshold) {
+    stateText.innerHTML = "<em>Sto aprendo nuovi posti...</em>";
+    // Transaction-safe
+    tryAutoUnlock(configRef).catch(() => {});
+  } else {
+    stateText.textContent = "";
+  }
 }
 
-onValue(configRef, (snap) => {
-  config = snap.exists() ? snap.val() : null;
-  render();
-});
+// Wait for DOM
+window.addEventListener("DOMContentLoaded", () => {
+  waitingText = document.getElementById("waitingText");
+  countdownText = document.getElementById("countdownText");
+  stateText = document.getElementById("stateText");
 
-onValue(reservationsRef, (snap) => {
-  reservationsRaw = snap.exists() ? snap.val() : [];
-  render();
+  onValue(configRef, (snap) => {
+    config = snap.exists() ? snap.val() : null;
+    render();
+  });
+
+  onValue(reservationsRef, (snap) => {
+    reservationsRaw = snap.exists() ? snap.val() : [];
+    render();
+  });
 });

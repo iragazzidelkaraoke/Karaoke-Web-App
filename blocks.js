@@ -45,6 +45,7 @@ export function normalizeBlocks(config) {
     totalMax,
     blocksTotal,
     modeAfterLast: raw.modeAfterLast || "MAX",
+    manualOverride: !!raw.manualOverride,
   };
 }
 
@@ -91,6 +92,7 @@ export async function tryAutoUnlock(configRef) {
     const blocks = cfg.blocks || {};
 
     if (!blocks.enabled) return cfg;
+    if (blocks.manualOverride) return cfg;
 
     const blockSize = clampInt(blocks.blockSize, 10, 1, 999999);
     const unlockAhead = clampInt(blocks.unlockAhead, 2, 0, 999999);
@@ -119,6 +121,48 @@ export async function tryAutoUnlock(configRef) {
   });
 }
 
+// Transactional sync of currentCap based on branoCorrente.
+// This is bidirectional: it can unlock forward and also "re-lock" if branoCorrente goes back.
+// Rule:
+// - Blocks unlock when branoCorrente >= (currentCap - unlockAhead)
+// - Therefore the active cap level can be derived from (branoCorrente + unlockAhead)
+// Example (blockSize=10, unlockAhead=2):
+//  branoCorrente 0..7  -> cap 10
+//  branoCorrente 8..17 -> cap 20
+//  branoCorrente 18..  -> cap 30 ...
+export async function syncBlocksCapToBranoCorrente(configRef) {
+  return runTransaction(configRef, (cfg) => {
+    if (!cfg) return cfg;
+
+    const totalMax = clampInt(cfg.maxPrenotazioni, 25, 1, 999999);
+    const branoCorrente = clampInt(cfg.branoCorrente, 0, 0, 999999);
+    const blocks = cfg.blocks || {};
+    if (!blocks.enabled) return cfg;
+    if (blocks.manualOverride) return cfg;
+
+    const blockSize = clampInt(blocks.blockSize, 10, 1, 999999);
+    const blockCount = clampInt(blocks.blockCount, 3, 1, 999999);
+    const unlockAhead = clampInt(blocks.unlockAhead, 2, 0, 999999);
+
+    // Compute level from song index (bidirectional)
+    const level = Math.min(
+      blockCount,
+      Math.max(1, 1 + Math.floor((branoCorrente + unlockAhead) / blockSize))
+    );
+    const desiredCap = Math.min(level * blockSize, totalMax);
+
+    const currentCap = clampInt(blocks.currentCap, Math.min(blockSize, totalMax), 1, totalMax);
+    if (desiredCap === currentCap) return cfg;
+
+    cfg.blocks = {
+      ...blocks,
+      currentCap: desiredCap,
+      modeAfterLast: blocks.modeAfterLast || "MAX",
+    };
+    return cfg;
+  });
+}
+
 // Manual helpers (editor)
 export async function openNextBlockNow(configRef) {
   return runTransaction(configRef, (cfg) => {
@@ -135,6 +179,7 @@ export async function openNextBlockNow(configRef) {
       enabled: true,
       currentCap,
       modeAfterLast: blocks.modeAfterLast || "MAX",
+      manualOverride: true,
     };
     return cfg;
   });
@@ -144,5 +189,6 @@ export async function resetBlocks(configRef, { blockSize, totalMax }) {
   const cap = Math.min(Math.max(1, Number.parseInt(blockSize || 10, 10)), totalMax);
   return update(configRef, {
     "blocks/currentCap": cap,
+    "blocks/manualOverride": false,
   });
 }

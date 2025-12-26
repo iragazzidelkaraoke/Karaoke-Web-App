@@ -12,6 +12,13 @@ import {
 
 import { database, goOffline, goOnline } from './firebase.js';
 
+import {
+  normalizeBlocks,
+  getEffectiveCap,
+  countValidReservations,
+} from './blocks.js';
+
+
 
 
 let inactivityTimer;
@@ -138,31 +145,39 @@ window.addEventListener("load", verificaToken);
 
 
 // Verifica se la canzone è già prenotata o sbloccata per errore
+// Verifica se la canzone è già prenotata o sbloccata per errore
 Promise.all([get(reservationsRef), get(lockedRef), get(configRef)]).then(
   ([resSnap, lockSnap, configSnap]) => {
-    const reservations = resSnap.exists() ? resSnap.val() : [];
-    const alreadyReserved = reservations.some((r) => r.song === song);
+    const cfg = configSnap.exists() ? configSnap.val() : { maxPrenotazioni: 25 };
+    maxPrenotazioni = cfg.maxPrenotazioni || 25;
+
+    const rawReservations = resSnap.exists() ? resSnap.val() : [];
+    const reservationsArr = Array.isArray(rawReservations)
+      ? rawReservations
+      : Object.values(rawReservations || {});
+
+    const alreadyReserved = reservationsArr.some((r) => r && r.song === song);
     const locked = lockSnap.exists();
-    maxPrenotazioni = configSnap.exists() ? configSnap.val().maxPrenotazioni || 25 : 25;
 
     if (!locked || alreadyReserved) {
       showCustomAlert("Il brano non è disponibile.");
-      //alert("Il brano non è disponibile.");
       window.location.href = "home.html";
+      return;
     }
 
-    // Se superato limite prenotazioni (conteggio reale!) 
-const raw = resSnap.exists() ? resSnap.val() : [];
-const prenCount = Array.isArray(raw)
-  ? raw.filter(r => r && r.name && r.song).length
-  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
+    // Se superato limite prenotazioni (conteggio reale!)
+    const prenCount = countValidReservations(rawReservations);
+    const cap = getEffectiveCap(cfg);
+    const blocks = normalizeBlocks(cfg);
 
-    if (prenCount >= maxPrenotazioni && !isEditor) {
-      window.location.href = "max.html";
+    if (prenCount >= cap && !isEditor) {
+      window.location.href =
+        (blocks.enabled && cap < blocks.totalMax) ? "blocked.html" : "max.html";
+      return;
     }
-
   }
 );
+
 
 // Gestione invio prenotazione
 bookingForm.addEventListener("submit", async (e) => {
@@ -170,8 +185,22 @@ bookingForm.addEventListener("submit", async (e) => {
   const name = document.getElementById("userName").value.trim();
   if (!name) return;
 
-  const snapshot = await get(reservationsRef);
-  const reservations = snapshot.exists() ? snapshot.val() : [];
+const [resSnapNow, cfgSnapNow] = await Promise.all([get(reservationsRef), get(configRef)]);
+const cfgNow = cfgSnapNow.exists() ? cfgSnapNow.val() : { maxPrenotazioni: 25 };
+const rawNow = resSnapNow.exists() ? resSnapNow.val() : [];
+const reservations = Array.isArray(rawNow) ? rawNow.slice() : Object.values(rawNow || {});
+
+// Check cap again right before inserting (race-condition safe)
+const prenCountNow = countValidReservations(rawNow);
+const capNow = getEffectiveCap(cfgNow);
+const blocksNow = normalizeBlocks(cfgNow);
+
+if (prenCountNow >= capNow && !isEditor) {
+  window.location.href =
+    (blocksNow.enabled && capNow < blocksNow.totalMax) ? "blocked.html" : "max.html";
+  return;
+}
+
 
 const validReservations = reservations.filter(r => r && r.name);
 if (validReservations.find(r => r.name === name)) {

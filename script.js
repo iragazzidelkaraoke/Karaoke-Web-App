@@ -5,6 +5,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, update} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 import { database, goOffline, goOnline } from './firebase.js';
+import {
+  normalizeBlocks,
+  getEffectiveCap,
+  countValidReservations,
+  isUserAlreadyReserved,
+  tryAutoUnlock,
+  syncBlocksCapToBranoCorrente,
+} from './blocks.js';
 
 //import { verificaToken } from './token.js';
 
@@ -120,34 +128,36 @@ window.addEventListener("load", verificaToken);
 
 
 // Prima controlla subito se superato il limite
+// Prima controlla subito se superato il limite
 Promise.all([
   get(ref(db, "config")),
   get(ref(db, "reservations"))
 ]).then(([configSnap, reservationsSnap]) => {
-  if (configSnap.exists()) {
-    maxPrenotazioniDaDb = configSnap.val().maxPrenotazioni || 25;
+  const cfg = configSnap.exists() ? configSnap.val() : null;
+
+  if (cfg) maxPrenotazioniDaDb = cfg.maxPrenotazioni || 25;
+  maxPrenotazioni = maxPrenotazioniDaDb;
+
+  const raw = reservationsSnap.exists() ? reservationsSnap.val() : [];
+  const prenCount = countValidReservations(raw);
+
+  const cap = getEffectiveCap(cfg || { maxPrenotazioni: maxPrenotazioniDaDb });
+  const blocks = normalizeBlocks(cfg || { maxPrenotazioni: maxPrenotazioniDaDb });
+
+  const sessionUserName = sessionStorage.getItem("userName");
+  const alreadyThere = isUserAlreadyReserved(raw, sessionUserName);
+
+  if (prenCount >= cap && !isEditor && !alreadyThere) {
+    if (blocks.enabled && cap < blocks.totalMax) {
+      window.location.href = "blocked.html";
+    } else {
+      window.location.href = "max.html";
+    }
   }
-  maxPrenotazioni = maxPrenotazioniDaDb; // <-- FONDAMENTALE
-  //configLoaded = true;                   // <-- FONDAMENTALE
 
-
-  if (reservationsSnap.exists()) {
-    prenotazioniDaDb = reservationsSnap.val();
-  }
-
-// Se è superato e non è editor → redirect (conteggio reale, ignora buchi)
-const raw = reservationsSnap.exists() ? reservationsSnap.val() : [];
-const prenCount = Array.isArray(raw)
-  ? raw.filter(r => r && r.name && r.song).length
-  : Object.values(raw || {}).filter(r => r && r.name && r.song).length;
-
-if (prenCount >= maxPrenotazioniDaDb && !isEditor) {
-  window.location.href = "max.html";
-}
-
-  // ✅ SOLO se NON è stato fatto il redirect:
-  document.body.style.visibility = "visible";  
+  document.body.style.visibility = "visible";
 });
+
 
 // REFERENZE AI DATI
 const songsRef = ref(db, 'songs');
@@ -287,23 +297,39 @@ onValue(reservationsRef, snapshot => {
 });
 
      
-     onValue(configRef, snapshot => {
-  if (snapshot.exists()) {
-    const config = snapshot.val();
-    maxPrenotazioni = config.maxPrenotazioni || 25;
-    branoCorrente = config.branoCorrente || 0;
-    annullaLimiteInput.value = config.annullaLimite || 0;
-    maxPrenotazioniInput.value = maxPrenotazioni;
-    updateCurrentSongIndexDisplay();
-    updateWaitingMsg();
-    updatePostiCounter();
-    updateReservationBanner();
+onValue(configRef, snapshot => {
+  if (!snapshot.exists()) return;
 
-        configLoaded = true;
-    renderSongs();
+  const config = snapshot.val();
+  maxPrenotazioni = config.maxPrenotazioni || 25;
+  branoCorrente = config.branoCorrente || 0;
 
+  const blocksState = normalizeBlocks(config);
+  const effectiveCap = getEffectiveCap(config);
+
+  // IMPORTANTISSIMO: salva subito in variabili globali usate dagli altri check/UI
+  window.__blocksState = blocksState;
+  window.__effectiveCap = effectiveCap;
+
+  annullaLimiteInput.value = config.annullaLimite || 0;
+  maxPrenotazioniInput.value = maxPrenotazioni;
+
+  // Sync bidirezionale: sblocca quando avanzi e richiude se torni indietro
+  if (blocksState.enabled) {
+    syncBlocksCapToBranoCorrente(configRef).catch(() => {});
+    // (lasciamo anche il vecchio auto-unlock come fallback)
+    tryAutoUnlock(configRef).catch(() => {});
   }
+
+  updateCurrentSongIndexDisplay();
+  updateWaitingMsg();
+  updatePostiCounter();
+  updateReservationBanner();
+
+  configLoaded = true;
+  renderSongs();
 });
+
 
 
 function updateReservationBanner() {
@@ -357,7 +383,8 @@ const count = Array.isArray(raw)
     // debug utilissimo
     console.log("HOME CHECK MAX", { count, maxPrenotazioni, configLoaded });
 
-    if (count < maxPrenotazioni) return;
+    const capCheck = window.__effectiveCap || maxPrenotazioni;
+if (count < capCheck) return;
 
     const currentUserName = sessionStorage.getItem("userName");
 
@@ -377,9 +404,13 @@ const count = Array.isArray(raw)
 }
 
 
-    if (!alreadyThere && !window.location.href.includes("editor=true")) {
-      setTimeout(() => (window.location.href = "max.html"), 200);
-    }
+if (!alreadyThere && !window.location.href.includes("editor=true")) {
+  const blocks = window.__blocksState;
+  const cap = window.__effectiveCap || maxPrenotazioni;
+  const shouldWait = !!blocks?.enabled && cap < maxPrenotazioni;
+  setTimeout(() => (window.location.href = shouldWait ? "blocked.html" : "max.html"), 200);
+}
+
   });
 }
 
@@ -389,7 +420,7 @@ const count = Array.isArray(raw)
   const annullaLimite = parseInt(annullaLimiteInput.value) || 0;
   maxPrenotazioni = parseInt(maxPrenotazioniInput.value) || 25;
 
-  set(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
+  update(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
 }
 
 
@@ -424,7 +455,7 @@ function save() {
     set(reservationsRef, prenotazioni);
   }
 
-  set(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
+  update(configRef, { maxPrenotazioni, branoCorrente, annullaLimite });
 }
 
 
@@ -493,8 +524,11 @@ function renderSongs() {
       : false;
 
 
-    if (prenCount >= maxPrenotazioni && !isEditor && !alreadyThere) {
-      window.location.href = "max.html";
+    const cap = window.__effectiveCap || maxPrenotazioni;
+    const blocks = window.__blocksState;
+    if (prenCount >= cap && !isEditor && !alreadyThere) {
+      const shouldWait = !!blocks?.enabled && cap < maxPrenotazioni;
+      window.location.href = shouldWait ? "blocked.html" : "max.html";
       return;
     }
 
@@ -822,7 +856,8 @@ function updatePostiCounter() {
   const prenRaw = Array.isArray(prenotazioni) ? prenotazioni : Object.values(prenotazioni || {});
   const realCount = prenRaw.filter(p => p && p.name && p.song).length;
 
-  el.textContent = `Posti prenotati: ${realCount} / ${maxPrenotazioni}`;
+  const cap = window.__effectiveCap || maxPrenotazioni;
+  el.textContent = `Posti prenotati: ${realCount} / ${cap}`;
 }
 
 setTimeout(() => {

@@ -7,6 +7,15 @@ import { getDatabase, ref, set, get, onValue, remove, update} from "https://www.
 
 import { database, goOffline, goOnline } from './firebase.js';
 
+import {
+  normalizeBlocks,
+  getEffectiveCap,
+  tryAutoUnlock,
+  openNextBlockNow,
+  syncBlocksCapToBranoCorrente,
+  resetBlocks,
+} from './blocks.js';
+
 
 
 
@@ -218,6 +227,7 @@ let editorMode = false;
 let branoCorrente = 0;
 let branoCorrenteInModifica = null;
 let currentUserName = null;
+let blocksState = null;
 let bloccaRender = false;
 let mostraSoloNascosti = false;
 
@@ -248,6 +258,100 @@ document.addEventListener("DOMContentLoaded", () => {
   const maxPrenotazioniInput = document.getElementById("maxPrenotazioniInput");
   const searchBar = document.getElementById("filterBars");
   const toggleHiddenBtn = document.getElementById("toggleHiddenBtn");
+
+  // Blocchi prenotazioni (NEW)
+  const blocksEnabledInput = document.getElementById("blocksEnabled");
+  const blockSizeInput = document.getElementById("blockSizeInput");
+  const blockCountInput = document.getElementById("blockCountInput");
+  const unlockAheadInput = document.getElementById("unlockAheadInput");
+  const blocksStatusText = document.getElementById("blocksStatusText");
+  const currentCapText = document.getElementById("currentCapText");
+  const nextUnlockText = document.getElementById("nextUnlockText");
+  const openNextBlockBtn = document.getElementById("openNextBlockBtn");
+  const closeBlocksBtn = document.getElementById("closeBlocksBtn");
+  const resetBlocksBtn = document.getElementById("resetBlocksBtn");
+
+  function updateBlocksStatus() {
+    if (!blocksStatusText || !currentCapText || !nextUnlockText) return;
+    const b = blocksState || normalizeBlocks({ maxPrenotazioni });
+    const totalMax = b.totalMax;
+
+    // "Blocchi: 10 / 20 / 30"
+    const caps = [];
+    for (let i = 1; i <= b.blockCount; i++) {
+      caps.push(Math.min(i * b.blockSize, totalMax));
+    }
+
+    blocksStatusText.textContent = `Blocchi: ${caps.join(" / ")}`;
+
+    const effective = b.enabled ? Math.min(b.currentCap, totalMax) : totalMax;
+    const manualTag = b.manualOverride ? " (MANUALE)" : "";
+    currentCapText.textContent = `Cap attuale: ${effective}${manualTag}`;
+
+    if (b.enabled && b.manualOverride) {
+      nextUnlockText.textContent = "Modalità manuale: il cap resta fisso finché non premi Reset blocchi o cambi i parametri.";
+    } else if (b.enabled && effective < totalMax) {
+      const thr = effective - b.unlockAhead;
+      nextUnlockText.textContent = `Prossimo sblocco quando branoCorrente ≥ ${thr}`;
+    } else if (b.enabled && effective >= totalMax) {
+      nextUnlockText.textContent = `Ultimo blocco: al raggiungimento di ${totalMax} si va su max definitivo.`;
+    } else {
+      nextUnlockText.textContent = `Blocchi disattivi: limite definitivo = ${totalMax}.`;
+    }
+  }
+
+  function persistBlocksConfig({ forceInitCap = false } = {}) {
+    const enabled = !!blocksEnabledInput?.checked;
+    const blockSize = parseInt(blockSizeInput?.value, 10) || 10;
+    const blockCount = parseInt(blockCountInput?.value, 10) || 3;
+    const unlockAhead = parseInt(unlockAheadInput?.value, 10) || 2;
+
+    const updates = {
+      "blocks/enabled": enabled,
+      "blocks/blockSize": Math.max(1, blockSize),
+      "blocks/blockCount": Math.max(1, blockCount),
+      "blocks/unlockAhead": Math.max(0, unlockAhead),
+      "blocks/modeAfterLast": "MAX",
+      "blocks/manualOverride": false,
+    };
+
+    // currentCap: se attivo, non lasciarlo mai sotto il primo blocco
+    if (enabled) {
+      const minCap = Math.min(Math.max(1, blockSize), maxPrenotazioni);
+      let capNow = blocksState ? blocksState.currentCap : minCap;
+      if (forceInitCap || !blocksState || !blocksState.enabled) {
+        capNow = minCap;
+      }
+      capNow = Math.min(Math.max(capNow, minCap), maxPrenotazioni);
+      updates["blocks/currentCap"] = capNow;
+    }
+
+    update(configRef, updates).catch((e) => console.error("Errore salvataggio blocchi:", e));
+  }
+
+  // Events blocchi
+  blocksEnabledInput?.addEventListener("change", () => persistBlocksConfig({ forceInitCap: true }));
+  blockSizeInput?.addEventListener("change", () => persistBlocksConfig());
+  blockCountInput?.addEventListener("change", () => persistBlocksConfig());
+  unlockAheadInput?.addEventListener("change", () => persistBlocksConfig());
+
+  openNextBlockBtn?.addEventListener("click", () => {
+    openNextBlockNow(configRef).catch((e) => console.error("Errore apri prossimo blocco:", e));
+  });
+
+  closeBlocksBtn?.addEventListener("click", () => {
+    update(configRef, {
+      "blocks/enabled": false,
+      "blocks/currentCap": maxPrenotazioni,
+      "blocks/manualOverride": false,
+    }).catch((e) => console.error("Errore chiusura blocchi:", e));
+  });
+
+  resetBlocksBtn?.addEventListener("click", () => {
+    const blockSize = parseInt(blockSizeInput?.value, 10) || 10;
+    resetBlocks(configRef, { blockSize, totalMax: maxPrenotazioni })
+      .catch((e) => console.error("Errore reset blocchi:", e));
+  });
 
 
 
@@ -370,10 +474,40 @@ onValue(reservationsRef, snapshot => {
      onValue(configRef, snapshot => {
   if (snapshot.exists()) {
     const config = snapshot.val();
+
     maxPrenotazioni = config.maxPrenotazioni || 25;
     branoCorrente = config.branoCorrente || 0;
     annullaLimiteInput.value = config.annullaLimite || 0;
     maxPrenotazioniInput.value = maxPrenotazioni;
+
+    // Blocchi prenotazioni
+    blocksState = normalizeBlocks(config);
+    if (!config.blocks) {
+      // inizializza (non invasivo)
+      update(configRef, {
+        "blocks/enabled": false,
+        "blocks/blockSize": blocksState.blockSize,
+        "blocks/blockCount": blocksState.blockCount,
+        "blocks/unlockAhead": blocksState.unlockAhead,
+        "blocks/currentCap": blocksState.currentCap,
+        "blocks/modeAfterLast": "MAX",
+      }).catch(() => {});
+    }
+
+    if (blocksEnabledInput) blocksEnabledInput.checked = !!blocksState.enabled;
+    if (blockSizeInput) blockSizeInput.value = blocksState.blockSize;
+    if (blockCountInput) blockCountInput.value = blocksState.blockCount;
+    if (unlockAheadInput) unlockAheadInput.value = blocksState.unlockAhead;
+
+    updateBlocksStatus();
+
+    // Sync bidirezionale: sblocca quando avanzi e richiude se torni indietro
+    if (blocksState.enabled) {
+      syncBlocksCapToBranoCorrente(configRef).catch(() => {});
+      // (fallback)
+      tryAutoUnlock(configRef).catch(() => {});
+    }
+
     updateCurrentSongIndexDisplay();
     updateWaitingMsg();
     updatePostiCounter();
@@ -401,7 +535,8 @@ function save() {
   maxPrenotazioni = parseInt(maxPrenotazioniInput.value) || 25;
   set(ref(db, "songs"), canzoni);
   set(ref(db, "reservations"), prenotazioni);
-  set(ref(db, "config"), {
+  // Non usare set() su config: cancellerebbe config.blocks
+  update(ref(db, "config"), {
     maxPrenotazioni,
     branoCorrente,
     annullaLimite
@@ -1117,7 +1252,10 @@ function updateWaitingMsg() {
 function updatePostiCounter() {
   const el = document.getElementById("postiCounter");
   if (!el) return;
-  el.textContent = `Posti prenotati: ${prenotazioni.length} / ${maxPrenotazioni}`;
+  const cap = blocksState && blocksState.enabled
+    ? Math.min(blocksState.currentCap, maxPrenotazioni)
+    : maxPrenotazioni;
+  el.textContent = `Posti prenotati: ${prenotazioni.length} / ${cap}`;
 }
 
 });
