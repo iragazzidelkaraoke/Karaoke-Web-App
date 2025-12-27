@@ -1362,12 +1362,13 @@ body {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 14px);
   left: 50%;
-  transform: translateX(-50%) translateY(-6px);
+  transform: translateX(-50%) translateY(0px);
+  top: 50%;
 
   max-width: calc(100% - 24px);
   width: fit-content;
 
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(0, 0, 0, 0.692);
   color: #fff;
   padding: 10px 14px;
   border-radius: 14px;
