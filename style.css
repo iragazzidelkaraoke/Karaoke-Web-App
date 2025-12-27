@@ -30,21 +30,27 @@ input{
 }
 
 .branoAttualeSection{
-  display: flex; 
+  display: flex;
   justify-content: center;
-  align-items: center; 
-  gap: 10px; 
-  flex-wrap: wrap; 
-  position: fixed; 
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
+
   background: #ffc1d87b;
   backdrop-filter: blur(10px);
   border-radius: 0px;
   padding: .2rem .5rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  width: 100%;
+
+  width: auto;           /* <— invece di width:100% */
+  max-width: 100%;       /* <— extra safety */
   z-index: 1000;
 }
+
 #reservationForm .btn {
   background-color: #db4d81;
 }
@@ -1297,6 +1303,8 @@ body {
 	font-family: -apple-system,".SFNSText-Regular","Helvetica Neue","Roboto","Segoe UI",sans-serif;
 }
 
+
+
 .toggle {
 	cursor: pointer;
 	display: inline-block;
@@ -1337,9 +1345,10 @@ body {
 		}
 	}
 }
-.toggle-checkbox {
+.impost .toggle-checkbox {
 	position: absolute;
 	visibility: hidden;
+  width: auto;
 }
 .toggle-label {
 	margin-left: 5px;
