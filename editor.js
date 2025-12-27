@@ -271,6 +271,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeBlocksBtn = document.getElementById("closeBlocksBtn");
   const resetBlocksBtn = document.getElementById("resetBlocksBtn");
 
+  // ===== Toast (messaggio rapido) =====
+let _toastEl = null;
+let _toastTimer = null;
+
+function showToast(message, ms = 1000) {
+  if (!_toastEl) {
+    _toastEl = document.createElement("div");
+    _toastEl.id = "editorToast";
+    _toastEl.className = "editor-toast";
+    document.body.appendChild(_toastEl);
+  }
+
+  _toastEl.textContent = message;
+  _toastEl.classList.add("show");
+
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    _toastEl.classList.remove("show");
+  }, ms);
+}
+
+
   function updateBlocksStatus() {
     if (!blocksStatusText || !currentCapText || !nextUnlockText) return;
     const b = blocksState || normalizeBlocks({ maxPrenotazioni });
@@ -330,28 +352,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Events blocchi
-  blocksEnabledInput?.addEventListener("change", () => persistBlocksConfig({ forceInitCap: true }));
-  blockSizeInput?.addEventListener("change", () => persistBlocksConfig());
-  blockCountInput?.addEventListener("change", () => persistBlocksConfig());
-  unlockAheadInput?.addEventListener("change", () => persistBlocksConfig());
+blocksEnabledInput?.addEventListener("change", () => {
+  persistBlocksConfig({ forceInitCap: true });
+  showToast(blocksEnabledInput.checked
+    ? "Blocchi prenotazioni: ATTIVATI"
+    : "Blocchi prenotazioni: DISATTIVATI"
+  );
+});
 
-  openNextBlockBtn?.addEventListener("click", () => {
-    openNextBlockNow(configRef).catch((e) => console.error("Errore apri prossimo blocco:", e));
-  });
+blockSizeInput?.addEventListener("change", () => {
+  persistBlocksConfig();
+  const v = parseInt(blockSizeInput.value, 10) || 0;
+  showToast(`Dimensione blocco impostata a ${v}`);
+});
 
-  closeBlocksBtn?.addEventListener("click", () => {
-    update(configRef, {
+blockCountInput?.addEventListener("change", () => {
+  persistBlocksConfig();
+  const v = parseInt(blockCountInput.value, 10) || 0;
+  showToast(`Numero blocchi impostato a ${v}`);
+});
+
+unlockAheadInput?.addEventListener("change", () => {
+  persistBlocksConfig();
+  const v = parseInt(unlockAheadInput.value, 10) || 0;
+  showToast(`Sblocco automatico: ${v} brani prima della fine del blocco`);
+});
+
+
+
+
+openNextBlockBtn?.addEventListener("click", async () => {
+  try {
+    await openNextBlockNow(configRef);
+    showToast("Prossimo blocco sbloccato");
+  } catch (e) {
+    console.error("Errore apri prossimo blocco:", e);
+    showToast("Errore: impossibile sbloccare il prossimo blocco");
+  }
+});
+
+closeBlocksBtn?.addEventListener("click", async () => {
+  try {
+    await update(configRef, {
       "blocks/enabled": false,
       "blocks/currentCap": maxPrenotazioni,
       "blocks/manualOverride": false,
-    }).catch((e) => console.error("Errore chiusura blocchi:", e));
-  });
+    });
+    showToast("Blocchi disattivati (cap tornato al massimo)");
+  } catch (e) {
+    console.error("Errore chiusura blocchi:", e);
+    showToast("Errore: impossibile disattivare i blocchi");
+  }
+});
 
-  resetBlocksBtn?.addEventListener("click", () => {
+resetBlocksBtn?.addEventListener("click", async () => {
+  try {
     const blockSize = parseInt(blockSizeInput?.value, 10) || 10;
-    resetBlocks(configRef, { blockSize, totalMax: maxPrenotazioni })
-      .catch((e) => console.error("Errore reset blocchi:", e));
-  });
+    await resetBlocks(configRef, { blockSize, totalMax: maxPrenotazioni });
+    showToast("Blocchi resettati");
+  } catch (e) {
+    console.error("Errore reset blocchi:", e);
+    showToast("Errore: reset blocchi non riuscito");
+  }
+});
 
 
 
@@ -517,8 +580,18 @@ onValue(reservationsRef, snapshot => {
 });
 
 
-      maxPrenotazioniInput.addEventListener("change", save);
-  annullaLimiteInput.addEventListener("change", save);
+maxPrenotazioniInput?.addEventListener("change", () => {
+  save();
+  const v = parseInt(maxPrenotazioniInput.value, 10) || 0;
+  showToast(`Il numero massimo di prenotazioni è stato impostato a ${v}`);
+});
+
+annullaLimiteInput?.addEventListener("change", () => {
+  save();
+  const v = parseInt(annullaLimiteInput.value, 10) || 0;
+  showToast(`Il limite per annullare è stato impostato a ${v}`);
+});
+
 
 
 
