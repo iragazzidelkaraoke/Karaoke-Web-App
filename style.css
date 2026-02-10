@@ -588,7 +588,7 @@ main {
 }
 .social-link {
   padding: .1em;
-  font-size: 15px;
+  font-size: 13px;
   text-align: center;
   position: fixed;
   left: 0;
@@ -605,7 +605,7 @@ main {
 .insta-link {
   color: #e4405f;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 13px;
   text-decoration: none;
   margin: 0;
 }
